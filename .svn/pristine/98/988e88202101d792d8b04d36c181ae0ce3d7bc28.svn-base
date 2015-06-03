@@ -1,0 +1,59 @@
+
+
+<html>	
+<h1>BUY IT YOU LEMMING! MUAHAHAHAHA!</h1>
+
+<?php
+require("../settings/mysql.php");
+
+$upc = $_POST["upc"];
+
+if (isset($upc)) {
+
+	$SQL = "SELECT * FROM Item WHERE upc = '$upc'";
+	$result = mysql_query($SQL);
+}
+	while($db_field = mysql_fetch_assoc($result)) {
+	?>
+	<table>
+		<thead>
+	<tr>
+		<td>Title</td>
+		<td>Price</td>
+		<td>Type</td>
+		<td>Category</td>
+	</tr>
+</thead>
+
+		<tr>
+			<td><?php echo $db_field['title']?></td>
+			<td><?php echo $db_field['price']?></td>
+			<td><?php echo $db_field['type']?></td>
+			<td><?php echo $db_field['category']?></td>
+			
+		</tr>
+		<?php
+	}
+?>
+</table>
+<body>
+
+<p> Please enter your credit card information to complete your 
+	purchase.
+
+<p> * indicates a required field.
+
+<form method="post" action="purchase.php">
+<p> Card Type: <select>
+					<option value="VISA">VISA</option>
+					<option value="Mastercard">Mastercard</option>
+					<option value="American Express">American Express</option>
+				<select>
+
+<p>
+	*Card No.:    <input type="text" name="cardNo"><br>
+	*Expiry Date: <input tyup="text" name="exp"><br>
+<p>
+	<input type="submit" name="submit">
+
+</html>

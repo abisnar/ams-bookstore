@@ -1,0 +1,18 @@
+<?php
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access(CLERK);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/clerk/clerkfunctions.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+print_page_start();
+submit_cash_order();
+
+?>
+<a href="index.php">Return to index.</a>
+<?php
+
+print_page_end();
+
+?>

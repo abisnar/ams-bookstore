@@ -1,0 +1,103 @@
+<html>
+<h1>Update Order</h1>
+
+<body>
+<form method="post" action="updateOrder.php">
+Receipt ID: <input type="text" name="rid">
+<input type="submit" name="submit">
+</form>
+
+<?php
+require("../settings/mysql.php");
+
+	if (empty($_POST["rid"]))
+
+		echo "Please input a receipt ID number.";
+
+	else {
+		$rid = $_POST["rid"];
+
+		$SQL = "SELECT receiptId, cid, expectedDate
+				FROM Purchase
+				WHERE receiptId = '$rid'";
+
+		$result = mysql_query($SQL, $link);
+
+		$SQL = "SELECT I.upc, I.title, PI.qty
+				FROM Item I, PurchaseItem PI, Purchase P 
+				WHERE P.receiptId = '$rid' AND PI.receiptId = P.receiptId AND PI.upc = I.upc";
+
+		$result2 = mysql_query($SQL, $link);
+		$num_rows = mysql_num_rows($result2);
+
+		while($db_field = mysql_fetch_assoc($result)) {
+		?>
+
+		<table id="record">
+		<thead>
+			<tr>
+				<td align="center"> Receipt ID </td>
+				<td align="center"> Customer ID  </td>
+				<td align="center"> Expected Date </td>
+				<td align="center"> Items </td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td align="center"><?php echo $db_field["receiptId"]?></td>
+				<td align="center"><?php echo $db_field["cid"]?></td>
+				<td align="center"><?php echo $db_field["expectedDate"]?></td>
+				<td>
+					<table>
+						<thead>
+							<tr>
+								<td> UPC </td>
+								<td> Title </td>
+								<td> Qty </td>
+						<?php while($db_field2 = mysql_fetch_assoc($result2)) { ?>
+								<tr>
+									<td><?php echo $db_field2["upc"]?></td>
+									<td><?php echo $db_field2["title"]?></td>
+									<td align="right"><?php echo $db_field2["qty"]?></td>
+								</tr>
+						<?php } ?>
+					</table>
+				</td>
+						
+			</tr>
+		</tbody>
+		</table>
+
+		<?php
+		}
+	}
+
+	if (!empty($rid)) { ?>
+
+	 <form method="post" action="updateOrder.php">
+	 	Set the delivery date: 
+	 	<input type="date" name="curr_date">
+	 	<input type="hidden" name="rid" value="<?php echo $rid?>">
+	 	<input type="submit" name="submit">
+	 </form>
+
+<?php
+	}
+
+	if (!empty($_POST["curr_date"])) {
+
+	$date = mysql_real_escape_string($_POST["curr_date"]);
+	$rid = mysql_real_escape_string($_POST["rid"]);
+
+	$SQL = "UPDATE Purchase
+			SET deliveredDate = '$date'
+			WHERE receiptId = '$rid'";
+
+	mysql_query($SQL, $link);
+	}
+?>
+
+
+</body>
+
+</html>

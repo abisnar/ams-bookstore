@@ -1,0 +1,107 @@
+<?php
+
+
+	function print_order(){
+		?>
+		<html>
+			<table>
+				<thead>
+					<tr>
+						<td>UPC</td>
+						<td>Title</td>
+						<td>Price</td>
+						<td>Quantity</td>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+						foreach ($_SESSION['items'] as $value) 
+						{		
+							?>
+								<tr>
+									<form method = "post" action = "purchase.php">
+									<td><?php echo $value['upc'] ?></td>
+									<td><?php echo $value['title'] ?></td>
+									<td><?php echo $value['price'] ?></td>
+									<td><?php echo $value['quantity'] ?></td>
+									</form>
+					
+								</tr>
+					<?php } ?> 
+
+ 				</tbody>
+			</table>
+		</html>
+		<?php echo "Total sale value: $" . $_SESSION['item_sum'] . "<br>";
+	}
+	function clear_order()
+	{
+		$_SESSION['items'] = array();
+		$_SESSION['item_sum'] = 0;
+	}
+
+	function submit_card_order($cardNo, $expiryDate)
+	{
+		$last5 = substr($cardNo, -5); //
+		$num = "SELECT COUNT('receiptId') FROM Purchase";
+		$receiptId = mysql_query($num, $GLOBALS["link"]);
+		$receiptId = mysql_fetch_assoc($receiptId);
+		$recId = $receiptId["COUNT('receiptId')"];
+		$recId++;
+		//$receiptId = ; //Generate sequential receiptId number based on number of purchases in DB.
+		$date = date("Y-m-d");
+		//Create new purchase tuple in DB.
+		$sql = "INSERT INTO `cs304`.`purchase` (`receiptId`, `date`, `cardNo`, `expiry`) VALUES ('$recId', '$date', '$cardNo', '$expiryDate')";
+		mysql_query($sql, $GLOBALS["link"]);
+		// Add new purchaseItem tuple for each item in the order. Decrease stock level of that item by the quantity ordered. 
+		foreach ($_SESSION['items'] as $value) {
+			$qty = $value['quantity'];
+			$upc = $value['upc'];
+			$sql = "INSERT INTO `cs304`.`purchaseitem` VALUES ('$recId', '$upc', '$qty')";
+			mysql_query($sql, $GLOBALS["link"]);
+			// Retrieve current stock levels and decrement by the item order quantity. 
+			$stock_val = "SELECT stock FROM item WHERE upc = '$upc'";
+			$result = mysql_query($stock_val, $GLOBALS["link"]);
+			$result = mysql_fetch_assoc($result);
+			$new_stock = $result['stock'];
+			$new_stock = $new_stock - $qty;
+			$post_stock = "UPDATE item SET stock=$new_stock WHERE upc = '$upc'";
+			mysql_query($post_stock, $GLOBALS["link"]);
+		}
+		echo "Thank you for your purchase. <br> </br>Receipt number: $recId, Date: $date, Card Number: $last5";
+		print_order();
+		clear_order();
+	}
+
+	function submit_cash_order()
+	{
+		$num = "SELECT COUNT('receiptId') FROM Purchase";
+		$receiptId = mysql_query($num, $GLOBALS["link"]);
+		$receiptId = mysql_fetch_assoc($receiptId);
+		$recId = $receiptId["COUNT('receiptId')"];
+		$recId++;
+		//$receiptId = ; //Generate sequential receiptId number based on number of purchases in DB.
+		$date = date("Y-m-d");
+		//Create new purchase tuple in DB.
+		$sql = "INSERT INTO `cs304`.`purchase` (`receiptId`, `date`) VALUES ('$recId', '$date')";
+		mysql_query($sql, $GLOBALS["link"]);
+		// Add new purchaseItem tuple for each item in the order. Decrease stock level of that item by the quantity ordered. 
+		foreach ($_SESSION['items'] as $value) {
+			$qty = $value['quantity'];
+			$upc = $value['upc'];
+			$sql = "INSERT INTO `cs304`.`purchaseitem` VALUES ('$recId', '$upc', '$qty')";
+			mysql_query($sql, $GLOBALS["link"]);
+			// Retrieve current stock levels and decrement by the item order quantity. 
+			$stock_val = "SELECT stock FROM item WHERE upc = '$upc'";
+			$result = mysql_query($stock_val, $GLOBALS["link"]);
+			$result = mysql_fetch_assoc($result);
+			$new_stock = $result['stock'];
+			$new_stock = $new_stock - $qty;
+			$post_stock = "UPDATE item SET stock=$new_stock WHERE upc = '$upc'";
+			mysql_query($post_stock, $GLOBALS["link"]);
+		}
+		echo "Thank you for your purchase. <br> </br>Receipt number: $recId, Date: $date";
+		print_order();
+		clear_order();
+	}
+?>

@@ -1,0 +1,38 @@
+require(.../settings/config.php);
+
+<?php
+
+
+if (isset($_POST["username"]) && isset($_POST["password"]) &&
+	isset($_POST["name"]) && isset($_POST["address"]) &&
+	isset($_POST["phone"]) {
+
+	// check if username exists within the system
+	$SQL = SELECT * FROM Customer WHERE cid = $_POST["username"];
+	$rows = mysql_num_rows($SQL);
+
+		// if no rows return, the username does not exist and the customer can be created
+		if($rows == 0) {
+
+			$password = md5($_POST["password"]); // hash the password
+
+			$SQL = "INSERT INTO Customer(cid, password, name, address, phone) 
+				VALUES ($_POST["username"], $password, $_POST["name"], $_POST["address"], $_POST["phone"])";
+	} else {
+
+		$error_msg = "Username already exists.";
+	}
+
+
+}
+
+?>
+
+<html>
+<body>
+	<form method="POST" action="register.php">
+		<p>Username:<input type="text" name="username"></p>
+		<p>Password:<input type="password" name"password"></p>
+	<?php isset($error_msg echo "Error: $error_msg")  ?>
+</body>
+</html>

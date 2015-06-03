@@ -1,0 +1,99 @@
+<?php
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+if(isset($_GET["error"])) {
+	switch($_GET["error"]) {
+		case 1: 
+			$GLOBALS["error_msg"] = "You have to be logged in to view this page!";
+			break;
+	}
+}
+
+if (isset($_GET["redirect"])) {
+	$GLOBALS["redirect"] = $_GET["redirect"];
+}
+
+function login_redirect($username, $access, $redirect) {
+	$_SESSION[USERNAME] = $username;
+	$_SESSION[ACCESS] = $access;
+	if(!empty($GLOBALS["redirect"])) {
+		header("Location: ".$GLOBALS["redirect"]);
+	} else {
+		header("Location: $redirect");
+	}
+	die();
+}
+
+if(isset($_POST["username"]) && isset($_POST["password"]) && isset($_POST["user_type"]))
+{
+	$username = $_POST["username"];
+	$password = $_POST["password"];
+	$password_hash = md5($password);
+	$user_type = $_POST["user_type"];
+	
+	if ($user_type == CUSTOMER) {
+		$sql = "SELECT cid FROM Customer WHERE cid = '$username' AND password = '$password_hash'";
+			
+		$result = mysql_query($sql, $link) or die(mysql_errno($link).": ".mysql_error($link)."\n");
+		$assoc = mysql_fetch_assoc($result);
+		$num_rows = mysql_num_rows($result);
+		
+		if($num_rows > 0) {
+			login_redirect($username, CUSTOMER, "http://".$_SERVER['SERVER_NAME']."/customer/index.php");
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	} else if ($user_type == CLERK && $username == CLERK_UNAME) {
+		if ($password == CLERK_PASSWORD) {
+			login_redirect($username, CLERK, "http://".$_SERVER['SERVER_NAME']."/clerk/index.php");
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	} else if ($user_type == MANAGER && $username == MANAGER_UNAME) {
+		if ($password == MANAGER_PASSWORD) {
+			login_redirect($username, MANAGER, "http://".$_SERVER['SERVER_NAME']."/manager/index.php");
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	}	
+}
+
+print_page_start();
+
+?>
+    <script type="text/javascript">
+		$(document).ready(function() {
+			<?php if(!isset($user_type) || ($user_type == CUSTOMER)) {echo '$("#user_type_div").hide();'; } ?>
+			$("#admin_link").on('click', function(){
+				$("#user_type_div").show();
+			});
+		});
+    </script>
+<div class="panel">
+  <div class="panel-heading">
+    <h3 class="panel-title">Panel title</h3>
+  </div>
+<form action="login.php" method="POST">
+	<div id="user_type_div">
+		User:
+		<select name="user_type">
+		  <option value="<?php echo CUSTOMER ?>"<?php if(isset($user_type) && $user_type == CUSTOMER){ echo ' selected="selected"';} ?>">Customer</option>
+		  <option value="<?php echo CLERK ?>"<?php if(isset($user_type) && $user_type == CLERK){ echo ' selected="selected"';} ?>>Clerk</option>
+		  <option value="<?php echo MANAGER ?>"<?php if(isset($user_type) && $user_type == MANAGER){ echo ' selected="selected"';} ?>>Manager</option>
+		</select>
+	</div>
+	Username: <input type="text" name="username"<?php if(isset($username)){ echo " value=$username";} ?>><br>
+	Password: <input type="password" name="password"><br>
+	<?php if(isset($GLOBALS["redirect"])) { echo '<input type="hidden" name="redirect" value="'.$GLOBALS["redirect"].'">';} ?>
+	<input type="submit">
+</form>
+<br>
+<div class="link">No account? <a href="../customer/register.php">Register here</a><div>
+<div class="link"><a id="admin_link" href="#">Clerk/Manager login</a></div>
+</div>
+<?php
+print_page_end();
+?>

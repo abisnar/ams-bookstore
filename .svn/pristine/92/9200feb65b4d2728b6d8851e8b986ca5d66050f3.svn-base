@@ -1,0 +1,52 @@
+
+
+<?php
+
+require("C:\wamp\www\settings\mysql.php");
+
+if (isset($_POST["username"]) && isset($_POST["password"]) &&
+	isset($_POST["name"]) && isset($_POST["address"]) &&
+	isset($_POST["phone"])) {
+
+	// check if username exists within the system
+	$username = $_POST["username"];
+	$SQL = "SELECT * FROM Customer WHERE cid = '$username'";
+	$result = mysql_query($SQL, $link);
+	$num_rows = mysql_num_rows($result);
+
+		// if no rows return, the username does not exist and the customer can be created
+		if($num_rows == 0) {
+
+			$password = md5($_POST["password"]); // hash the password
+			$name = $_POST["name"];
+			$address = $_POST["address"];
+			$phone = $_POST["phone"];
+
+			$SQL = "INSERT INTO Customer VALUES ('$username', '$password', '$name', '$address', '$phone')";
+			mysql_query($SQL);
+		} else {
+
+		$error_msg = "Username already exists.";
+		}
+	mysql_close($link);
+
+}
+
+?>
+
+<html>
+<h1>Register New Account</h1>
+<body>
+
+	<?php if (isset($error_msg)) { echo "Error: $error_msg";}  ?>
+
+	<form method="post" action="register.php">
+		Username:     <input type="text" name="username"><br>
+		Password:     <input type="password" name="password"><br>
+		Name:         <input type="text" name="name"><br>
+		Address:      <input type="text" name="address"><br>
+		Phone:        <input type="text" name="phone"><br>
+		<input type="submit" name="submit">
+
+</body>
+</html>

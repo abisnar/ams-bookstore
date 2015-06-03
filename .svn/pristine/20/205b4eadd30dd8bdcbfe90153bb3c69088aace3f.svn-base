@@ -1,0 +1,13 @@
+<?php
+session_start();
+require("..\settings\mysql.php");
+include "clerkfunctions.php";
+
+	$cardNo = $_POST['cardNo'];
+	$cardEx = $_POST['cardEx'];
+	submit_card_order($cardNo, $cardEx);
+
+?>
+<html> 
+<a href="index.php">Return to index.</a>
+</html>

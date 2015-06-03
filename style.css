@@ -1,0 +1,164 @@
+div.total{
+  width: 400px;
+  text-align:right;
+}
+
+@import 'bootstrap.less';
+
+div.item{
+  width: 400px;
+  max-height: 50px;
+  border-style:solid;
+border-width:1px;
+margin-bottom: 2px;
+padding: 3px;
+}
+div.cart_num{
+ vertical-align: bottom;
+}
+
+div.block{
+  overflow: hidden;
+  float: left;
+}
+div.block label{
+  width:160px;
+  display:block;
+  float:left;
+  text-align:left;
+}
+.ui-datepicker-calendar {
+    display: none;
+ }
+ 
+ .ui-datepicker-buttonpane button.ui-datepicker-current {
+	visibility: hidden;
+ }
+ 
+.ui-datepicker-prev,
+.ui-datepicker-next {
+	display: none;
+}
+
+#ui-datepicker-div {
+	margin: 3px;
+	padding: 3px;
+	border-style: solid;
+	border-width: 1px;
+}
+
+.error {
+	/* color: FF0000; */
+}
+
+.container {
+	max-width: 100%;
+	width: 100%;
+	padding-left: 15%;
+	padding-right: 15%;
+	background-color:#EEEEEE;
+}
+
+.header {
+	height: 50px;
+}
+
+.header-left {
+	font-size: 250%;
+	margin: 0px;
+	padding:0px;
+	float: left;
+}
+
+.header-cart {
+	/* border-right: 3px solid #AAAAAA; */
+	text-align: right; 
+	float: right;
+	padding-right: 8px;
+}
+
+.header-name {
+	text-align: right; 
+/*	width: 180px; */
+	max-width: 250px;
+	float: right;
+}
+
+.body {
+	width: 100%;
+	background-color:#FFFFFF;
+	padding: 30px;
+	border: 1px solid #DDDDDD;
+	
+}
+
+body {
+	background-color:#EEEEEE;
+}
+
+.btn-ams {
+	background-color: white !important;
+	color: black  !important;
+	border-color: #DDDDDD  !important;
+}
+
+.btn-ams:hover {
+	background-color: #F5F5F5 !important;
+	border-color: #DDDDDD !important;
+	color: black !important;
+}
+
+.btn-ams:after{
+	color: red;
+}
+
+.dropdown-toggle:active, .open .dropdown-toggle {
+	background:#FFF !important; 
+	color:#000 !important;
+}
+
+.dropdown-toggle .caret-black { 
+	border-bottom-color: black;
+    border-top-color: black;
+	margin-left: 5px;
+ }
+ 
+ .dropdown-toggle-left-side {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	border-right-width: 0px;
+ }
+ 
+ a.dropdown-toggle .caret-black {
+	margin-top: 8px;
+ }
+ 
+ .alert-info {
+	margin-top: 5px;
+	margin-bottom: 0px;
+	padding: 0px;
+ }
+ 
+ .margin-right-10 {
+	margin-right: 10px;
+ }
+ 
+ .label-ams {
+	color: black;
+	background-color: white;
+	border: solid 1px #DDDDDD; 
+	padding: 10px;
+ }
+ 
+ .label-ams-total {
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	border-top-width: 0px;	
+ }
+ 
+ .label-light {
+	color: black;
+	background-color: white;
+	border: solid 1px #DDDDDD; 
+ }
+ 

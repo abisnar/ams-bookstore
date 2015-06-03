@@ -1,0 +1,127 @@
+<?php
+	require("../settings/mysql.php");
+	include 'clerkfunctions.php';
+	session_start();
+	$return_sum = 0.00;
+	$return_item = array();
+
+	if(isset($_SESSION['return_item_sum'])) 
+	{
+		$return_sum = $_SESSION['return_item_sum'];
+	} 
+	else $return_sum = 0;
+?>
+<html>
+<h1>Process a Return</h1>
+
+<body>
+	<form method="post" action="return.php">
+	  Receipt Id: <input type="text" name="rid" /input><br>
+	  Item UPC: <input type="text" name="upc" /inpit><br>
+	  Return Quantity:  <input type="text" name="qty" /inpit><br>
+  		<input type="submit" name="Submit" /input>
+	</form>
+<?php
+	if(!isset($_POST["rid"]))
+	{
+		echo "Please enter a receipt number.<br>";
+	}
+	if(!isset($_POST["upc"]))
+	{
+		echo "Please enter an item upc.<br>";
+	}
+	if(!isset($_POST["qty"]))
+	{
+		echo "Please enter a quantity.<br>";
+	}
+	else
+	{
+
+		//set search parameters
+		$rid = mysql_real_escape_string($_POST["rid"]);
+		$upc = mysql_real_escape_string($_POST["upc"]);
+		$qty = mysql_real_escape_string($_POST["qty"]);
+
+		$SQL = "SELECT * FROM Purchase WHERE receiptId = $rid";
+		$result = mysql_query($SQL, $GLOBALS["link"]);
+		if($result == false || mysql_num_rows($result) <= 0)
+			echo "Receipt does not exist. <br>";
+		else
+		{
+
+			$original_order = mysql_fetch_assoc($result);
+			// Extract the quantity of the item from the original purchase
+			$original_quantity = "SELECT PI.qty FROM purchaseItem PI WHERE PI.receiptId = $rid AND PI.upc = $upc";
+			$original_quantity = mysql_query($original_quantity, $GLOBALS["link"]);
+			if($original_quantity == false || mysql_num_rows($result) <= 0)
+			{
+				echo "The item $upc was not found in the order. <br>";
+			}
+			else
+			{
+				$original_quantity = mysql_fetch_assoc($original_quantity);
+				$original_quant = $original_quantity['qty'];
+				echo "The receipt order amount is: $original_quant<br>";
+				if($original_quant > $qty)
+				{
+					echo "Higher quantity selected than was in original purchase.";
+				}
+				else
+				{
+					$prev_ret_quant = "SELECT RI.qty FROM returnItem RI WHERE RI.retId = $rid AND RI.upc = $upc";
+					$prev_ret_quant = mysql_query($prev_ret_quant, $GLOBALS["link"]);	
+					$prev_ret_quant = mysql_fetch_assoc($prev_ret_quant);
+					$prev_quant = $prev_ret_quant['qty'];
+					echo "Previous returned amount is: $prev_quant<br>";
+					echo "You wish to return $qty items.<br>";
+					if(($qty + $prev_quant) > $original_quantity)
+					{
+						echo "There are previous returns for this item on this receipt. These, combined with the requested return quantity, exceed the original purchase amount.";
+					}
+					else
+					{
+						$SQL = "SELECT price FROM Item WHERE upc = $upc";
+						$result = mysql_query($SQL, $GLOBALS["link"]);
+						$result = mysql_fetch_assoc($result);
+						$return_sum = $result['price'];
+						$_SESSION['rid'] = $rid;
+						$_SESSION['return_item'] = $upc;
+						$_SESSION['qty'] = $qty;
+						$_SESSION['return_item_sum'] = $return_sum;
+						echo "Process a refund for $qty units of item $upc from receipt $rid? <br> Total return price is: $return_sum";
+						?>
+						
+							<form method="post" action="process.php">
+						  	<input type="submit" name="Submit" value="Confirm" /input>
+							</form>
+						<?php
+					}
+				}
+			}
+		
+		}
+	
+		//TODO:Check if rid & item exist in PI. If so, add to session return list. If not, error.
+		// TODO: Enter multiple items for return
+		//TODO: Check cash or card. 
+		//...
+		//Check if purchase exists in DB
+		
+	// 	else 
+	// 	{
+		
+	// 		if(is_null($original_order['cardNo']) && is_null($original_order['expiry']))
+	// 		{	
+
+	// 			echo "Cash return. <br>";
+	// 			process_return($rid);
+	// 		}
+
+	// 		else
+	// 		{
+	// 			//process card refund
+	// 		}
+		//}
+	}
+?>
+</html>

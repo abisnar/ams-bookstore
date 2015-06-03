@@ -1,0 +1,78 @@
+<?php
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+
+function print_header() {
+	echo '<div class="header" style="margin-top: 30px;">';
+	echo '<div class="header-left col-lg-9"><a href="http://'.$_SERVER['SERVER_NAME'].'/index.php" class="btn btn-default">ams music.</a></div>';
+		echo '<div class="col-lg-2 header-right">';
+			if(has_access_only(CUSTOMER, 0, 0)) {
+				$item_num = 0;
+				if(isset($_SESSION["cart"])) {
+					foreach($_SESSION["cart"] as $upc=>$quantity) {
+						if ($quantity > 0) {
+							$item_num += $quantity;
+						}
+					}
+				} 
+				echo "<a href='cart.php' style='font-size: 130%;'>cart ($item_num)</a>";
+			}
+		echo '</div>';
+		if(has_access(CUSTOMER, 0, 0)) {
+			echo '<div class="col-lg-1" style="padding-left: 30px;">';
+				echo '<div class="name row">';
+					echo 'hello, '.$_SESSION['username'];
+				echo '</div>';
+				echo '<div class="logout row">';
+					echo '<a href="../common/logout.php">log out</a>';
+				echo '</div>';
+			echo '</div>';
+		}
+	echo '</div>';
+}
+
+function print_page_start() {
+	echo '<html>
+		<head>
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+			<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+			<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+			<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css">
+			<link rel="stylesheet" type="text/css" media="screen" href="//tarruda.github.com/bootstrap-datetimepicker/assets/css/bootstrap-datetimepicker.min.css">
+			<link href="//'.$_SERVER['SERVER_NAME'].'/style.css" rel="stylesheet" type="text/css" />
+		</head>
+		<body>
+			<div class="container" id="container">';
+			print_header();
+	echo '		<div class="body img-rounded" id="body">';
+	if (!empty($GLOBALS['error_msg'])) { 
+		echo '<div class="error alert alert-danger">';
+		echo '<button type="button" class="close" data-dismiss="alert">x</button>';
+		echo $GLOBALS['error_msg'];
+		echo '</div>';
+	}
+}
+
+function print_page_end() {
+echo '		</div>
+		</div>
+	</body>
+</html>';
+}
+
+function print_manager_top() {
+	echo '<h1>Manager</h1>
+
+	<ul class="breadcrumb" style="width: 1000px">
+	<li><a href="http://'.$_SERVER['SERVER_NAME'].'/manager/updateInventory.php">Add/Remove/Update Item</a>
+	<li class="active">Print Daily Sales Report</li>
+	<li><a href="http://'.$_SERVER['SERVER_NAME'].'/manager/updateOrder.php">Update Order</a>
+	<li><a href="http://'.$_SERVER['SERVER_NAME'].'/manager/top_sales.php">Print Top Selling Items</a>
+	<li><a href="http://'.$_SERVER['SERVER_NAME'].'/common/login.php">Back to Login</a>
+	</ul>';
+}
+
+
+?>

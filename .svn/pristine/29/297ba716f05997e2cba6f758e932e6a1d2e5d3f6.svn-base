@@ -1,0 +1,80 @@
+<?php 
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access(CLERK);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/clerk/clerkfunctions.php");
+
+print_page_start();
+
+?>
+<h2>Final order contents</h2>
+	<?php
+		print_order();
+	?>
+
+	<div id="summaryDiv">
+		<button id="cardPaymentButton" onclick="showCard()">Pay with Card</button>
+		<button id="cashPaymentButton" onclick="showCash()">Pay with Cash</button>
+		<!-- put contents here -->
+	</div>
+
+	<div id="cardPaymentDiv" style="display:none">
+		<form method="post" name="cardPay" action="process_card_pay.php">
+			Card Number: <input type="text" name="cardNo" id="cardNo" /input><br>
+			Card Expiry (YYYY-MM-DD): <input type="text" name="cardEx" id="cardEx" /input><br>
+	  		<input type="submit" onclick="checkFormData()" name="Submit" /input>
+		</form>
+		<?php
+		
+		?>
+	</div>
+
+	<div id="cashPaymentDiv" style="display:none">
+		<form method="post" name="cardPay" action="process_cash_pay.php">
+	  		<input type="submit" name="Submit" /input>
+		</form>
+	</div>
+		<script type="text/javascript">
+		function showCard(){
+			document.getElementById('cardPaymentDiv').style.display="block";
+			document.getElementById('cashPaymentDiv').style.display="none";
+		}
+		function showCash(){
+			document.getElementById('cardPaymentDiv').style.display="none";
+			document.getElementById('cashPaymentDiv').style.display="block";
+		}
+		function checkFormData(){
+			var x=document.forms["cardPay"]["cardNo"].value;
+			var y=document.forms["cardPay"]["cardEx"].value;
+			if (x==null || x==""){
+				alert("Card number must be filled out");
+				return false;
+			}
+			if (y==null || y==""){
+				alert("Card expiry must be filled out");
+				return false;
+			}
+			else{
+				var isVerified = confirm("Is the card valid?");
+				if (isVerified){
+					return true;
+				}
+				else{
+					var isCashOrder = confirm('Does the customer want to use cash?');
+					if (isCashOrder){
+						showCash();
+						return false;
+					}
+					else{
+						alert('cancel the order');
+						return false;
+					}
+				}
+			}
+		}
+	</script>
+<?php
+print_page_end();
+?>

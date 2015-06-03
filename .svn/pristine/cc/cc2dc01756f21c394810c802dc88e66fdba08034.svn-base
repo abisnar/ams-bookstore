@@ -1,0 +1,114 @@
+
+
+
+<html>
+<h1>Product Search</h1>
+
+<body>
+
+<form method="post" action="search.php">
+	Search by: <select name="search">
+				<option value="upc">UPC</option>
+				<option value="title">Title</option>
+				<option value="price">Price</option>
+				<option value="type">Type</option>	
+				<option value="category">Category</option>
+				<option value="leadsinger">Lead Singer</option>
+			</select>
+	<input type="text" name="input">
+<p>
+<?php 
+if (isset($_POST["input"])) {
+	?>
+
+<table>
+<thead>
+	<tr>
+		<td>UPC</td>
+		<td>Title</td>
+		<td>Price</td>
+		<td>Type</td>
+		<td>Category</td>
+		<td> </td>
+	</tr>
+</thead>
+<tbody>
+</p>
+<?php
+}
+?>
+
+<?php
+require("C:\wamp\www\settings\mysql.php");
+
+// check that a search parameter was inputted
+if (isset($_POST["input"])) {
+
+	// set the drop down parameters
+	$search = $_POST["search"];
+	$input = $_POST["input"];
+
+	if ($search == "upc") {
+
+	$SQL = "SELECT * FROM Item WHERE upc = '$input'";
+	$result = mysql_query($SQL, $link);
+
+	} else if ($search == "title") {
+
+		$SQL = "SELECT * FROM Item WHERE title LIKE '%$input%'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "price") {
+
+		$SQL = "SELECT * FROM Item WHERE price <= '$input'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "type") {
+
+		$SQL = "SELECT * FROM Item WHERE type = '$input'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "category") {
+
+		$SQL = "SELECT * FROM Item WHERE category = '$input'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "leadsinger") {
+
+		$SQL = "SELECT * FROM Item I, LeadSinger S WHERE S.name LIKE '%$input%' AND I.upc = S.upc";
+		$result = mysql_query($SQL, $link);
+	}
+
+	if ($result == false)
+		echo "Query failed. <br>";
+	else
+		echo "Query sucessful. <br>";
+
+?>
+</form>
+	<?php 
+	while($db_field = mysql_fetch_assoc($result)) {
+	?>
+		<tr>
+			<form method="post" action="purchase.php">
+			<td><?php echo $db_field['upc']?></td>
+			<td><?php echo $db_field['title']?></td>
+			<td><?php echo $db_field['price']?></td>
+			<td><?php echo $db_field['type']?></td>
+			<td><?php echo $db_field['category']?></td>
+			<td><input type="submit" name="submit" 
+				value="Buy"></td>
+				<input type="hidden" name="upc" 
+				value="<?php echo $db_field['upc']?>">
+			</form>
+			
+		</tr>
+		<?php
+	}
+}
+?>
+</table>
+
+</body>
+
+</html>

@@ -1,0 +1,89 @@
+
+CREATE TABLE Item
+(upc INTEGER,
+title CHAR(40),
+type CHAR(3),
+category CHAR(20),
+company CHAR(30),
+year INTEGER,
+price FLOAT(8),
+stock INTEGER,
+PRIMARY KEY(upc));
+
+CREATE TABLE LeadSinger
+(upc INTEGER,
+name CHAR(20),
+PRIMARY KEY(upc, name),
+FOREIGN KEY(upc) 
+	REFERENCES Item(upc)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE);
+
+CREATE TABLE HasSong
+(upc INTEGER,
+title CHAR(20),
+PRIMARY KEY(upc, title),
+FOREIGN KEY(upc) 
+	REFERENCES Item(upc)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE);
+	
+CREATE TABLE Customer
+(cid CHAR(10),
+password CHAR(32),
+name CHAR(30),
+address CHAR(80),
+phone CHAR(13),
+PRIMARY KEY(cid));
+
+CREATE TABLE Purchase
+(receiptId INTEGER AUTO_INCREMENT,
+date DATE,
+cid CHAR(10),
+cardNo INTEGER,
+expiry DATE,
+expectedDate DATE,
+deliveredDate DATE,
+PRIMARY KEY(receiptId),
+FOREIGN KEY(cid)
+	REFERENCES Customer(cid)
+	ON DELETE SET NULL
+	ON UPDATE CASCADE);
+
+CREATE TABLE PurchaseItem
+(receiptId INTEGER,
+upc INTEGER,
+qty INTEGER,
+PRIMARY KEY(receiptId, upc),
+FOREIGN KEY(receiptId)
+	REFERENCES Purchase(receiptId)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+FOREIGN KEY(upc)
+	REFERENCES Item(upc)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE);
+
+CREATE TABLE ReturnTable
+(retId INTEGER AUTO_INCREMENT,
+date DATE,
+receiptId INTEGER,
+PRIMARY KEY(retId),
+FOREIGN KEY(receiptId)
+	REFERENCES Purchase(receiptId)
+	ON DELETE SET NULL
+	ON UPDATE CASCADE);
+
+CREATE TABLE ReturnItem
+(retId INTEGER,
+upc INTEGER,
+qty INTEGER,
+PRIMARY KEY(retId, upc),
+FOREIGN KEY(retId)
+	REFERENCES ReturnTable(retId)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+FOREIGN KEY(upc)
+	REFERENCES Item(upc)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE);

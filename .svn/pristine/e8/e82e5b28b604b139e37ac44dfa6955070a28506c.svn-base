@@ -1,0 +1,38 @@
+<?php
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+if(has_access_only(CUSTOMER, 0, 0)) {
+	header("Location: http://".$_SERVER["SERVER_NAME"]."customer/index.php");
+}
+
+if(isset($_GET["success"])) {
+	switch($_GET["success"]) {
+		case 1: 
+			$GLOBALS["success_msg"] = "You have successfully logged out.";
+			break;
+	}
+}
+
+print_page_start();
+
+?>
+
+	<h3>Welcome to ams music.</h3>
+	<p>You have two main options available to you. If you're an existing entity/thing/etc., log in using the Sign In button below.</p>
+
+	<form action="common/login.php">
+    	<input type="submit" value="Sign In">
+	</form>
+
+	<p>If you haven't yet signed your life over to our evil, soulless corporation, you can register below. </p>
+	
+	<form action="customer/register.php">
+    	<input type="submit" value="Register">
+	</form>
+	
+<?php
+print_page_end();
+?>

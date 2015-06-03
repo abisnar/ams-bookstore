@@ -1,0 +1,102 @@
+.ams store DATABASE README FILE
+
+
+Alexey Indeev
+Kevin Stark
+Jon Jeffery
+Allan Bisnar
+
+FUNCTIONALITY
+
+---------------INDEX PAGE------------------------
+Register Account
+Login
+Manager/Clerk Login
+
+---------------CUSTOMER PERSPECTIVE--------------
+Purchase
+View Cart
+Update
+Search
+
+
+--------------CLERK PERSPECTIVE------------------
+			== Process Purchase ==
+	The clerk will search for an item in the store by its (valid) UPC, and the quantity that the customer wishes to purchase. The item will be added to the cart.
+	If no quantity is selected the default value is 1. 
+
+	The clerk can add as many items as the customer wants, as long as there is sufficient stock. The current contents of the shopping cart 
+	are displayed below the search input, as is the current purchase price. 
+
+	Once the customer is satisfied with the order, the clerk will press the proceed to payment button.
+	
+	The payment page displays the final shopping cart contents as well as the final sale price. If the customer changes their mind, the clerk can cancel the purchase
+	and return to the home page.
+
+	The purchase can be completed either by cash or credit card. If credit card is selected, the clerk will enter the card information in the appropriate forms. 
+	Once the information is fully entered the clerk can proceed with rthe card purchase. At this point the clerk should debit the customer's card on the external card terminal. 
+
+	If the card isn't validated, the clerk will have a chance to cancel the card transaction. The customer will have a chance to pay with cash if they choose. If they
+	prefer not to, the purchase will be cancelled.
+
+	Once the purchase is confirmed a page containing the receipt will be shown. This page includes all the final sale information, as well as the receipt ID.
+
+	
+			== Process Return == 
+	The clerk will enter a valid receipt ID, an item that was purchased on the original sale, and a quantity equal to or lower than the original purchase quantity.
+
+	If the quantity is above the original quantity, or if there have been previous returns that would increase the total return quantity to above the original purchase quantity, 
+	an error message will be displayed and the purchase will not complete.
+
+	If the information entered is all correct the clerk will be instructed to refund the customer for the appropriate amount using the purchase method originally used.
+	A new return will be created and the items automatically reentered into the database. 	
+
+
+--------------MANAGER PERSPECTIVE---------------
+			== Add New Item To Database==
+	This query allows the Manager add a valid new Item to the Database.
+
+	First, it makes sure the form being filled is set, then form input is checked.
+
+	There must be a provided integer in the UPC field, or else will print out an error call, since it is a primary key.
+
+	Then we query the Item database to check for any Items with the given UPC, 
+	there there gives a row greater than 0, then that item already exists and terminates yielding an error to update or add to existing stock
+
+	then the function checks for other important restraints:
+		The type must be either a cd or dvd, or else there will be an error call
+		The category must be either rock, pop, rap, country, classical, new age or instrumental. Or else an error message will present
+
+	Company, price, quantity, year are all optional and can be null when you press the submit button
+	doing so will fill a NULL value for company, while price,quantity and year are all set to 0 by default.
+
+	if you try to add a new item with the same UPC number through add new item, it will yeild an error telling the user to
+	add to existing Item or Update the Item's fields through the Update Item option
+
+				==  Add to Existing Item==
+
+	This allows the manager to update the price and stock of an existing object.
+	First we check to make sure the object exists filled in the query
+	There is a check to make sure a quantity and UPC value is provided or else an error message is sent
+	
+	Then the function checks to see if price is set
+	if so, a Query is made = UPDATE Item set stock = stock + stock_input AND price = new price
+	WHERE UPC = input UPC2 value
+	
+	If no price is provided only update stock = stock + input_stock query runs
+
+Remove Item
+	Remove Item checks to see if the UPC exists in the database, if so, it deletes the entire tuple
+
+Update Inventory(modify fields)
+This class contains many forms each for the different fields that you can modify.
+
+When a form is filled out, and submitted, a helper if statement checks the paramenters to make sure the right form is processed and checks the input field parameters are valid
+if it passes the check, a call to the update switch statement with the corresponding condition is processed
+calling an update to Item for the corresponding field.
+
+Since we are changing fields, all form values for the expected update must be filled out or an error is printed out
+
+Sales Report
+Top Selling Items
+

@@ -1,0 +1,18 @@
+<?php
+require("/settings/mysql.php");
+?>
+
+<html>
+<h1>Welcome to our store.</h1>
+<p>We used to have tons of options, but we've cut most of them due to complexity reasons.</p>
+<p style="font-size: 85%; color: blue">You have two main options available to you. If you're an existing entity/thing/etc., log in using the Sign In button below.</p>
+
+<form action="../common/login.php">
+    <input type="submit" value="Sign In">
+</form>
+<p>If you haven't yet signed your life over to our evil, soulless corporation, you can register below. </p>
+<form action="../customer/register.php">
+    <input type="submit" value="Register">
+</form>
+<p>I'm really not sure what else should go on this page. Maybe a search button?  
+</html>

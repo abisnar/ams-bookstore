@@ -1,0 +1,92 @@
+<?php
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access_only(CUSTOMER);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+print_page_start();
+
+?>
+<h1>Checkout</h1>
+<script>
+$(document).ready(function () {
+		var jq = $.noConflict();
+		$('#card_exp').datepicker( {
+			changeMonth: true,
+			changeYear: true,
+			showButtonPanel: true,
+			dateFormat: 'MM yy',
+			onClose: function(dateText, inst) { 
+				var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+				var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+				$(this).datepicker('setDate', new Date(year, month, 1));
+			}
+		});
+		$('#ui-datepicker-div').hide();
+		
+		
+		$("#submit_purchase").click(function() {
+			var data = $("#purchase_form").serialize();
+			$.ajax({
+				   type: "POST",
+				   url: "purchase.php",
+				   data: data,
+				   success: function(data) {
+						var code = data.substr(0,1);
+						if(code == "0") {
+							var lines = data.split(',');
+							$("#body").html("Your purchase was successful! The delivery with take approximately " + lines[1] + " days. Your order confirmation number is #" + lines[2] + ". <br><a href=\"index.php\">Return to store!</a>");
+						} else if(code == "1") {
+							$("#error").html("Your cart is empty or you have not provided all the required information" + data);
+						} else if(code == "2") {
+							$("#error").html("Your cart is empty!");
+						} else if(code == "3") {
+							$("#error").html("Please choose one of Visa, American Express, or Mastercard. Other cards are not supported");
+						} else if(code == "4") {
+							$("#error").html("Parsing credit card number failed. Please try again (must be at least 14 digits)");
+						} else {
+							$("#error").html("Unknown error!" + data);
+						}
+				   }
+				 });
+
+			return false; // avoid to execute the actual submit of the form.
+		});	
+
+});
+</script>
+
+<?php
+
+require_once("print_cart.php");
+echo print_cart(true);
+
+if($GLOBALS['item_num'] < 1) {
+	header("Location: cart.php?error=1");
+}
+
+?>
+
+<p> Please enter your credit card information to complete your 
+	purchase. 
+</p>
+
+<form method="post" action="purchase.php" id="purchase_form">
+	Card Type:
+	<select name="card_type">
+		<option value="visa">VISA</option>
+		<option value="mc">Mastercard</option>
+		<option value="ae">American Express</option>
+	<select>
+	<br>
+	Card No.:    
+	<input type="text" name="card_no">
+	<br>
+	Expiry Date: 
+	<input type="text" id="card_exp" name="card_exp" size="10">
+	<br>
+	<input type="submit" name="submit_purchase" id="submit_purchase" value="Purchase">
+</form>
+<?php print_page_end(); ?>

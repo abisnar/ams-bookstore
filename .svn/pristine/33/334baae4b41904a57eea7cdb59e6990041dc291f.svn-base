@@ -1,0 +1,172 @@
+<?php
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+has_access(MANAGER);
+print_page_start();
+print_manager_top(MANAGER_DD_UPDATE_INVENTORY);
+
+function add_Item() {
+	if (isset($_POST["UPC"]) && isset($_POST["Title"]) && 
+		isset($_POST["Type"]) && isset($_POST["Category"]) && isset($_POST["Company"]) &&
+		isset($_POST["Year"]) && isset($_POST["Price"]) && isset($_POST["Quantity"])) {
+
+	$UPC = mysql_real_escape_string($_POST["UPC"]);
+
+	if(empty($UPC)) {
+			echo '<div class="alert-danger">
+					<button class="close" data-dismiss="alert"> </button>
+					<strong> Error!</strong> UPC cannot be NULL.
+					</div>';
+		}
+		$SQL = "SELECT *
+				FROM Item 
+				WHERE upc = '$UPC'";
+		$result = mysql_query($SQL);
+
+		$num_rows = mysql_num_rows($result);
+if (!empty($_POST['add-submit'])){
+		// if no rows return, add album to Items, and add songs to hasSong
+		if($num_rows == 0) {
+			$UPC= mysql_real_escape_string($_POST["UPC"]);
+			$title = mysql_real_escape_string($_POST["Title"]);
+		//make sure the type is either cd or dvd
+			if (mysql_real_escape_string($_POST["Type"]) == "cd" ||
+			 	mysql_real_escape_string($_POST["Type"]) == "dvd") {
+				$type = mysql_real_escape_string($_POST["Type"]);
+				} else {
+				echo '<div class="alert-danger">
+					<button class="close" data-dismiss="alert"> </button>
+					<strong> Error!</strong> Type needs or be cd or dvd.
+					</div>';
+					return;
+					}
+			
+			// Check input to ensure correct Category type
+			if (mysql_real_escape_string($_POST["Category"]) == "rock" || mysql_real_escape_string($_POST["Category"]) == "pop" || 
+				mysql_real_escape_string($_POST["Category"]) == "rap" || mysql_real_escape_string($_POST["Category"]) == "country" ||
+				mysql_real_escape_string($_POST["Category"]) =="classical" ||mysql_real_escape_string($_POST["Category"]) =="new age" ||
+				mysql_real_escape_string($_POST["Category"]) == "instrumental")
+			{
+			$category = mysql_real_escape_string($_POST["Category"]);
+			}else{
+				echo '<div class="alert-danger">
+				<button class="close" data-dismiss="alert"> </button>
+				<strong> Error!</strong> Invalid Category Type.
+				</div>';
+				return;
+			}
+
+			$company = mysql_real_escape_string($_POST["Company"]);
+			$year = mysql_real_escape_string($_POST["Year"]);
+			$price = mysql_real_escape_string($_POST["Price"]);
+			$stock = mysql_real_escape_string($_POST["Quantity"]);
+
+			$SQL = "INSERT INTO Item
+					VALUES ('$UPC', '$title', '$type', '$category', '$company','$year','$price','$stock')";
+			$result = mysql_query($SQL);
+			echo "Item #$UPC has been added to the table.";
+			// Item has been added to the Item table
+			} else {
+			echo '<div class="alert-danger">
+				<button class="close" data-dismiss="alert"> </button>
+				<strong> Error!</strong> Item has already been added to the Database. Please Add to Existing Item or Update Item.
+				</div>';
+			}
+		}
+	}
+}
+
+function add_existingItem(){
+	// Check to make sure UPC and Quantity in Add To Existing Item are not empty
+	if (isset($_POST["UPC2"]) && isset($_POST["Quantity2"])){
+		$UPC2 = mysql_real_escape_string($_POST["UPC2"]);
+		$Quantity2 = mysql_real_escape_string($_POST["Quantity2"]);
+		// If Price is provided (optional field)
+		if (!empty($_POST["Price2"])){
+			$Price2 = mysql_real_escape_string($_POST["Price2"]);
+
+			// first check to make sure item is indeed in the database
+			$itemCheck = "SELECT * FROM Item WHERE upc = '$UPC2'";
+			$iCheckResult = mysql_query($itemCheck);
+			$num_rows2 = mysql_num_rows($iCheckResult);
+			// if there is are rows means there exist an item with the corresponding UPC input
+			if ($num_rows2 != 0){
+				// update the stock and price
+			$update_Stock = "UPDATE Item SET stock = stock + '$Quantity2', price = '$Price2' WHERE upc = '$UPC2'";
+			$result_Query = mysql_query($update_Stock);
+			echo "Stock and Price has been updated.";
+			}else{
+				// Item is not in the database
+			echo '<div class="alert-danger">
+				<button class="close" data-dismiss="alert"> </button>
+				<strong> Error!</strong> Item is not in the Database. Please Add New Item.
+				</div>';
+			}
+
+			// Price2 is not set so need to update Price
+		}else {
+			//check again to see if item is in database
+			$itemCheck = "SELECT * FROM Item WHERE upc = '$UPC2'";
+			$iCheckResult = mysql_query($itemCheck);
+			$num_rows2 = mysql_num_rows($iCheckResult);
+			// item is in database
+			if ($num_rows2 != 0) {
+				$update_Stock = "UPDATE Item SET stock = stock + '$Quantity2' WHERE upc = '$UPC2'";
+				$result_Query = mysql_query($update_Stock);
+				echo "Stock has been updated.";
+			}else{
+				// item is not in the database
+				echo '<div class="alert-danger">
+				<button class="close" data-dismiss="alert"> </button>
+				<strong> Error!</strong> Item is not in the Database. Please Add New Item.
+				</div>';
+			}
+		}
+	}// UPC and Quantity are not set
+	else{
+		echo '<div class="alert-danger">
+				<button class="close" data-dismiss="alert"> </button>
+				<strong> Error!</strong> UPC and/or Quantity are empty. Please provide both a UPC and Quantity
+				</div>';
+	}
+	} 
+
+if(isset($_POST["add-submit"])){
+add_item();
+}
+
+if(isset($_POST["add-exist"])){
+add_existingItem();
+}
+
+?>
+
+<h3>Add New Item</h3>
+
+	<form method="post" action="add_item.php">
+		<input type="text" class="form-control input-sm" placeholder="UPC" style="width: 300px" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Title" style="width: 300px" name="Title"<?php if(isset($title)){ echo " value=$title";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Type" style="width: 300px" name="Type"<?php if(isset($type)){ echo " value=$type";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Category" style="width: 300px" name="Category"<?php if(isset($category)){ echo " value=$category";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Company" style="width: 300px" name="Company"<?php if(isset($company)){ echo " value=$company";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Price" style="width: 300px" name="Price"<?php if(isset($price)){ echo " value=$price";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Year" style="width: 300px" name="Year"<?php if(isset($year)){ echo " value=$year";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Quantity" style="width: 300px" name="Quantity"<?php if(isset($stock)){ echo " value=$stock";} ?>><br>
+		<input type="submit" class="btn btn-success" name="add-submit">
+
+	</form>
+
+
+<h3>Add To Existing Item</h3>
+
+	<form method="post" action="add_item.php">
+		<input type="text" class="form-control input-sm" placeholder="UPC" style="width: 300px" name="UPC2"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Price" style="width: 300px" name="Price2"<?php if(isset($price)){ echo " value=$price";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Quantity" style="width: 300px" name="Quantity2"<?php if(isset($stock)){ echo " value=$stock";} ?>><br>
+		<input type="submit" class="btn btn-success" name="add-exist">
+
+

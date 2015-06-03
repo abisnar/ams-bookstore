@@ -1,0 +1,148 @@
+<?php
+
+require("../settings/mysql.php");
+session_start();
+
+function return_with_error($code) {
+		// TODO: return with error code!
+		header("Location: search.php?error=$code");
+		die();
+}
+
+function update_cart() {
+	if(isset($_POST["add_to_cart"]) || isset($_POST["update_cart"])) {
+		$cart = array();
+		if(isset($_SESSION["cart"])) {
+			$cart = $_SESSION["cart"];
+		} else {
+			$_SESSION["cart"] = $cart;
+		}
+		
+		$stock = 0;
+		$sql = "SELECT stock FROM Item WHERE upc = '".$_POST["upc"]."'";
+		$result = mysql_query($sql, $GLOBALS["link"]);
+		if($result && mysql_num_rows($result) > 0) {
+			$db_field = mysql_fetch_assoc($result);
+			$stock = $db_field['stock'];
+		} else {
+			return_with_error(1);
+		}
+		
+		if(isset($_POST["add_to_cart"])) {
+			if(isset($cart[$_POST["upc"]])) {
+				if ($stock < ($cart[$_POST["upc"]] + $_POST["quantity"])) {
+					echo 1;
+					return_with_error(0);
+				}
+				$cart[$_POST["upc"]] += $_POST["quantity"];
+			} else {
+				if ($stock < $_POST["quantity"]) {
+					echo "stock: $stock";
+					echo "to add: ".$_POST["quantity"];
+					return_with_error(0);
+				}
+				$cart[$_POST["upc"]] = 0 + $_POST["quantity"];
+			}
+		}
+		if(isset($_POST["update_cart"])) {
+			if(isset($cart[$_POST["upc"]])) {
+				if ($stock < $_POST["quantity"]) {
+					echo 3;
+					return_with_error(0);
+				}
+				$cart[$_POST["upc"]] = 0 + $_POST["quantity"];
+			}
+		}
+		$_SESSION["cart"] = $cart;
+		header("Location: cart.php");
+		die();
+	}
+}
+
+update_cart();
+
+?>
+
+<html>
+<head>
+<style>
+div.total{
+  width: 400px;
+  text-align:right;
+}
+div.item{
+  width: 400px;
+  max-height: 50px;
+  border-style:solid;
+border-width:1px;
+margin-bottom: 2px;
+padding: 3px;
+}
+div.cart_num{
+ vertical-align: bottom;
+}
+
+div.block{
+  overflow:hidden;
+  float: left;
+}
+div.block label{
+  width:160px;
+  display:block;
+  float:left;
+  text-align:left;
+}
+</style>
+</head>
+<body>
+<h1>Shopping cart</h1>
+<?php
+	$item_num = 0;
+	$cart_html = "";
+	$total = 0;
+	if (isset($_SESSION["cart"])) {
+		foreach($_SESSION["cart"] as $upc=>$quantity) {
+			if($quantity > 0) {
+				$sql = "SELECT title, year, price FROM Item WHERE upc = '$upc'";
+				$result = mysql_query($sql, $link);
+				if(mysql_num_rows($result) > 0) {
+					$db_field = mysql_fetch_assoc($result);
+					$cart_html .= "<div class='item'><div class='item_desc' style='float:left;'>
+					<span class='title'>".$db_field['title']."</span> (".$db_field['year'].")";
+					$total += $db_field['price']*$quantity;
+					$item_num += $quantity;
+					$sql = "SELECT name FROM LeadSinger WHERE upc = '$upc'";
+					$result_lead = mysql_query($sql, $link);
+					if(mysql_num_rows($result_lead) > 0) {
+						$db_field_lead = mysql_fetch_assoc($result_lead);
+						$cart_html += '<br>by <b>'.$db_field_lead['name'].'</b>';
+					}
+					$cart_html .= '</div>
+					<div class="cart_num" style="float:right;">
+					<form method="post" id="update_cart" action="cart.php" style="margin: 0px;">
+							<input type="hidden" name="upc" id="upc" value="'.$upc.'">
+							<input type="input"  name="quantity" id="upc_'.$upc.'" value="'.$quantity.'" size="3">
+							<input type="submit" name="update_cart" id="update_cart" value="Update cart">
+					 </form>
+					 </div>
+					 <div class="spacer" style="clear: both;"></div>
+					 </div>';
+				}
+			}
+		}
+	} 
+	echo "<i>You have $item_num items in your cart</i>";
+	echo $cart_html;
+	if($item_num > 0) {
+		echo "<div class=\"total\">Total: $total</div>";
+	}
+?>
+
+
+<br />
+
+<a href="search.php">Return to search</a>
+<a href="checkout.php">Checkout</a>
+
+<body>
+</html>

@@ -1,0 +1,21 @@
+<?php
+
+$user_name="cs304";
+$password="password";
+$database="cs304";
+$server="localhost";
+
+define("USERNAME", "username");
+define("ACCESS", "access");
+
+define("CUSTOMER", 0);
+define("CLERK", 1);
+define("MANAGER", 2);
+
+define("CLERK_UNAME", "clerk");
+define("MANAGER_UNAME", "manager");
+
+define("CLERK_PASSWORD", "password");
+define("MANAGER_PASSWORD", "password");
+
+?>

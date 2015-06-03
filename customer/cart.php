@@ -1,0 +1,90 @@
+<?php
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access_only(CUSTOMER);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+if(isset($_GET["error"])) {
+	switch($_GET["error"]) {
+		case 1: 
+			$GLOBALS["error_msg"] = "Cannot checkout, you have nothing in your cart!";
+			break;
+	}
+}
+
+function return_with_error($code) {
+		header("Location: index.php?error=$code");
+		exit;
+}
+
+function update_cart() {
+	if($_SESSION["access"] > CUSTOMER) {
+		return_with_error(2);
+	}
+
+	if(isset($_POST["add_to_cart"]) || isset($_POST["update_cart"])) {
+		$cart = array();
+		if(isset($_SESSION["cart"])) {
+			$cart = $_SESSION["cart"];
+		} else {
+			$_SESSION["cart"] = $cart;
+		}
+		
+		$stock = 0;
+		$sql = "SELECT stock FROM Item WHERE upc = '".$_POST["upc"]."'";
+		$result = mysql_query($sql, $GLOBALS["link"]);
+		if($result && mysql_num_rows($result) > 0) {
+			$db_field = mysql_fetch_assoc($result);
+			$stock = $db_field['stock'];
+		} else {
+			return_with_error(2);
+		}
+		
+		if(isset($_POST["add_to_cart"])) {
+			if(isset($cart[$_POST["upc"]])) {
+				if ($stock < ($cart[$_POST["upc"]] + $_POST["quantity"])) {
+					return_with_error(0);
+				}
+				$cart[$_POST["upc"]] += $_POST["quantity"];
+			} else {
+				if ($stock < $_POST["quantity"]) {
+					return_with_error(0);
+				}
+				$cart[$_POST["upc"]] = 0 + $_POST["quantity"];
+			}
+		}
+		if(isset($_POST["update_cart"])) {
+			if(isset($cart[$_POST["upc"]])) {
+				if ($stock < $_POST["quantity"]) {
+					return_with_error(0);
+				}
+				$cart[$_POST["upc"]] = 0 + $_POST["quantity"];
+			}
+		}
+		$_SESSION["cart"] = $cart;
+		header("Location: cart.php");
+		exit;
+	}
+}
+
+update_cart();
+print_page_start();
+
+?>
+<h3>Shopping cart</h3>
+<?php
+	include "print_cart.php";
+	echo print_cart(false);
+?>
+<br />
+<div style="height: 35px;">
+<div class="block margin-right-10">
+<a href="#" onclick="history.back(); return false;" class="btn btn-ams">Return to search</a>
+</div>
+<?php
+if($GLOBALS['item_num'] > 0) {echo '<div class="block"><a href="checkout.php" class="btn btn-primary">Checkout</a></div>';}
+echo "</div>";
+print_page_end();
+?>

@@ -1,0 +1,89 @@
+<?php
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+has_access(MANAGER);
+print_page_start();
+print_manager_top(MANAGER_DD_UPDATE_INVENTORY);
+
+function add_Item() {
+	if (isset($_POST["UPC"]) && isset($_POST["Title"]) && 
+		isset($_POST["Type"]) && isset($_POST["Category"]) && isset($_POST["Company"]) &&
+		isset($_POST["Year"]) && isset($_POST["Price"]) && isset($_POST["Quantity"])) {
+
+	$UPC = mysql_real_escape_string($_POST["UPC"]);
+
+	if(empty($UPC)) {
+			$GLOBALS["error_msg"] = "UPC cannot be empty!";
+			return;
+		}
+		$SQL = "SELECT *
+				FROM Item 
+				WHERE upc = '$UPC'";
+		$result = mysql_query($SQL);
+		// $link didn't work for me... deleted the $link parameter in mysql_query.. now it works
+		$SQL = "SELECT stock
+				FROM Item
+				WHERE upc = '$UPC'";
+		$result_stock = mysql_query($SQL);
+
+		$SQL = "SELECT title
+				FROM Item
+				WHERE upc = '$UPC'";
+
+		$result_title = mysql_query($SQL);
+
+		$SQL = "SELECT price
+				FROM Item 
+				WHERE upc = '$UPC'"; 
+		$result_price = mysql_query($SQL);
+
+		$num_rows = mysql_num_rows($result);
+if (!empty($_POST['add-submit'])){
+		// if no rows return, add album to Items, and add songs to hasSong
+		if($num_rows == 0) {
+			$UPC= mysql_real_escape_string($_POST["UPC"]);
+			$title = mysql_real_escape_string($_POST["Title"]);
+			$type = mysql_real_escape_string($_POST["Type"]);
+			$category = mysql_real_escape_string($_POST["Category"]);
+			$company = mysql_real_escape_string($_POST["Company"]);
+			$year = mysql_real_escape_string($_POST["Year"]);
+			$price = mysql_real_escape_string($_POST["Price"]);
+			$stock = mysql_real_escape_string($_POST["Quantity"]);
+
+			$SQL = "INSERT INTO Item
+					VALUES ('$UPC', '$title', '$type', '$category', '$company','$year','$price','$stock')";
+			$result = mysql_query($SQL);
+			echo "Item #$UPC has been added to the table.";
+			// Item has been added to the Item table
+			}else{
+			echo "Item has already been added to the database please Update Item";
+			}
+		}
+	}
+}
+
+$error_msg = "";
+add_Item(); ?>
+
+<h3>Add New Item</h3>
+
+	<form method="post" action="add_item.php">
+		<input type="text" class="form-control input-sm" placeholder="UPC" style="width: 300px" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Title" style="width: 300px" name="Title"<?php if(isset($title)){ echo " value=$title";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Type" style="width: 300px" name="Type"<?php if(isset($type)){ echo " value=$type";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Category" style="width: 300px" name="Category"<?php if(isset($category)){ echo " value=$category";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Company" style="width: 300px" name="Company"<?php if(isset($company)){ echo " value=$company";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Price" style="width: 300px" name="Price"<?php if(isset($price)){ echo " value=$price";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Year" style="width: 300px" name="Year"<?php if(isset($year)){ echo " value=$year";} ?>><br>
+		<input type="text" class="form-control input-sm" placeholder="Quantity" style="width: 300px" name="Quantity"<?php if(isset($stock)){ echo " value=$stock";} ?>><br>
+		<input type="submit" class="btn btn-success" name="add-submit">
+		<?php add_Item() ?>
+
+	</form>
+	<?php
+	add_Item(); ?>
+

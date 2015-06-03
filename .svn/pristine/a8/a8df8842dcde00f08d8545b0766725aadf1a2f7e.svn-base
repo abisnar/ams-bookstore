@@ -1,0 +1,8 @@
+<?php
+
+$user_name="cs304";
+$password="password";
+$database="cs304";
+$server="localhost";
+
+?>

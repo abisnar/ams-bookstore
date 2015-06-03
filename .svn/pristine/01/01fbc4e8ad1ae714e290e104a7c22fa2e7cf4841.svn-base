@@ -1,0 +1,8 @@
+<?php
+
+$user_name="u956416809_cs304";
+$password="p7XuyHTZZN";
+$database="u956416809_cs304";
+$server="mysql.uhostfull.com";
+
+?>

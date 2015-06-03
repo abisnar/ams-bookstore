@@ -1,0 +1,84 @@
+<html>
+<h1>Top Selling Items</h1>
+
+<li><a href='index.php'>Back to Index</a>	<p>
+
+Please select a time period: <br>
+
+<form method="post" action="top_sales.php">
+From: <input type="date" name="start_date">
+To: <input type="date" name="end_date"<br>
+Top <input type="integer" name="top"> Items <br>
+<input type="submit" name="Submit">
+</form>
+
+<?php
+require("../settings/mysql.php");
+
+	 if (empty($_POST["start_date"]) || empty($_POST["end_date"])) {
+
+		echo "One or more dates are not set. Please enter both a start and end date.";
+		
+	 } else if (empty($_POST["top"])) {
+
+		echo "Must enter the number of top sellers to display.";
+
+	} else if (isset($_POST["start_date"]) && isset($_POST["end_date"]) && isset($_POST["top"])) {
+
+	$start_date = mysql_real_escape_string($_POST["start_date"]);
+	$end_date = mysql_real_escape_string($_POST["end_date"]);
+	$top_items = mysql_real_escape_string($_POST["top"]);
+
+	if ($start_date > $end_date) {
+
+		echo "Error: Start date is before end date!";
+
+	} else {
+		$SQL = "SELECT I.upc, I.title, I.category, SUM(PI.qty) AS units_sold
+		FROM Item I, PurchaseItem PI, Purchase P
+		WHERE I.upc = PI.upc AND P.date BETWEEN '$start_date' AND '$end_date'
+		GROUP BY I.upc
+		ORDER BY units_sold DESC";
+
+		
+		$result = mysql_query($SQL, $link);
+	
+	?>
+	<body>
+	<table>
+		<thead>
+			<tr>
+				<td> UPC </td>
+				<td> Name </td>
+				<td> Category</td>
+				<td> Units Sold </td>
+			</tr>
+		</thead>
+		<tbody>
+
+<?php
+		$i = 0;
+		while($i < $top_items && $db_field = mysql_fetch_assoc($result)) {
+?>
+			<tr>
+				<td><?php echo $db_field["upc"]?></td>
+				<td><?php echo $db_field["title"]?></td>
+				<td><?php echo $db_field["category"]?></td>
+				<td><?php echo $db_field["units_sold"]?></td>
+			</tr>
+<?php
+		$i++;
+		}
+	}
+}
+
+
+?>
+
+</tbody>
+</table>
+
+
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+<?php
+	
+	require("../settings/mysql.php");
+	include 'clerkfunctions.php';
+	session_start();
+
+	$sum = 0.00;
+	$item = array();
+	
+
+
+	if(isset($_SESSION['items'])) 
+	{
+		$items = $_SESSION['items'];
+	} 
+	else $items = array();
+
+	if(isset($_SESSION['item_sum'])) 
+	{
+		$sum = $_SESSION['item_sum'];
+	} 
+	else $sum = 0;
+
+?>
+<html>
+<h1>Process a Sale</h1>
+
+<body>
+	<form method="post" action="purchase.php">
+	  Enter the Item UPC: <input type="text" name="upc" /input><br>
+	  Quantity: <input type="text" name="quantity" /input><br>
+  		<input type="submit" name="Submit" /input>
+	</form>
+
+
+		<?php
+
+
+		//Check that a search parameter is inputted
+			if (isset($_POST["upc"])) {
+
+				//set search parameters
+				$upc = mysql_real_escape_string($_POST["upc"]);
+
+				$SQL = "SELECT * FROM item WHERE upc = '$upc'";
+				$result = mysql_query($SQL, $GLOBALS["link"]);
+				
+				if($result == false || mysql_num_rows($result) <= 0)
+					echo "Item does not exist. <br>";
+				else 
+				{	
+
+					$item = mysql_fetch_assoc($result);
+					
+					// Default to 1 if no quantity set.
+					$quantity = isset($_POST['quantity']) && $_POST['quantity'] > 0 ? $_POST["quantity"] : 1 ;
+					// check stock from DB
+					$stock = $item['stock'];
+					// Check if the item is already in the order. If so, check stock levels and combine quantities.
+					if(isset($items[$item['upc']]))
+					{
+						$upc = $item['upc'];
+						$existing_item = $items[$item['upc']];
+						$old_quant = $existing_item['quantity'];
+						$new_quant = $quantity + $old_quant;
+						if($new_quant > $item['stock'])
+						{
+							echo "Not enough stock for this order. There are $new_quant units available. <br>";
+						}
+						else 
+						{
+							$item['quantity'] = $new_quant;
+							$items[$item['upc']] = $item;
+							$sum += ($item['price'] * $quantity);
+							echo "Item added to purchase. <br>";
+						}
+					}
+					else
+						{
+						$item['quantity'] = $quantity;
+
+						// No quantity selected, or insufficient quantity.
+						if (isset($quantity) && $quantity > $stock){
+							echo "Not enough stock for this order. There are $stock units available. <br>";
+						}
+						// We have sufficient stock, add to the order.
+						else
+						{	
+							$sum += ($item['price'] * $item['quantity']);
+							$items[$item['upc']] = $item;
+							echo "Item added to purchase. <br>";
+						}
+					}
+				}
+			}
+	
+
+	$_SESSION['items'] = $items;
+	$_SESSION['item_sum'] = $sum;
+	print_order();
+	?>
+	<a href="payment.php">Proceed to payment processing.</a>
+	<br>
+	<a href="index.php">Cancel payment and return to index.</a>
+</body>
+
+</html>
+
+
+

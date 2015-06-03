@@ -1,0 +1,18 @@
+<?php
+require("../settings/mysql.php");
+include "clerkfunctions.php";
+
+session_start();
+clear_order();
+?>
+
+<html>
+	<h1>Welcome, nameless clerk.</h1>
+	<p>You can either process a purchase or a return.</p>
+	<form action="purchase.php">
+    	<input type="submit" value="Purchase">
+	</form>
+	
+	<form action="return.php">
+    	<input type="submit" value="Return">
+	</form>

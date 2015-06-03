@@ -1,0 +1,10 @@
+<?php
+session_start();
+require("..\settings\mysql.php");
+include "clerkfunctions.php";
+	submit_cash_order();
+
+?>
+<html> 
+<a href="index.php">Return to index.</a>
+</html>

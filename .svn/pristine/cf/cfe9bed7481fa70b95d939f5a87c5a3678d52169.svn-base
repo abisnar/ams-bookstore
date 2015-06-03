@@ -1,0 +1,46 @@
+<html>
+<h1>Process a Sale</hi>
+
+<body>
+	<form method="post" action="purchase.php">
+	  Enter the Item UPC: <input type="UPC" name="search"><br>
+  <input type="submit" name = "input">
+</form>
+
+</body>
+
+
+
+<?php
+require("..\settings\mysql.php");
+
+//Check that a search parameter is inputted
+$sale_list = array();
+
+if (isset($_POST)["input"])) {
+	
+	//set search parameters
+	$search = $_POST["search"];
+	$input = $_POST["input"];
+
+	$SQL = "SELECT * FROM Item WHERE upc = '$input'";
+	$result = mysql_query($SQL, $link);
+	
+
+	if($result == false)
+		echo "Item does not exist. <br>";
+	else 
+		$sale_list = mysql_fetch_assoc($result)
+		echo "Item added to purchase. <br>";
+
+
+}
+
+?>
+
+<form action = "purchase.php" method = "post">
+	<?php
+	while($sale_list =  mysql_fetch_assoc($result)){
+		<tr>
+		
+	}

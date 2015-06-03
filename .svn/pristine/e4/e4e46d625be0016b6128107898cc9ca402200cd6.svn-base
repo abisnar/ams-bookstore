@@ -1,0 +1,19 @@
+<?PHP
+require(...config.php)
+
+mysql_connect($server, $user_name, $password);
+$db_found = mysql_select_db($database);
+
+if ($db_found) {
+
+print "Database Found";
+
+}
+else {
+
+print "Database NOT Found";
+
+}
+
+?>
+

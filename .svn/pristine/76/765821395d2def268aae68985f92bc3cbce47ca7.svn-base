@@ -1,0 +1,106 @@
+<html>
+<h1>Process a Sale</h1>
+
+<body>
+	<form method="post" action="purchase.php">
+	  Enter the Item UPC: <input type="text" name="upc" /input><br>
+	  Quantity: <input type="text" name="quantity" /input><br>
+  		<input type="submit" name="Submit" /input>
+	</form>
+
+	<table>
+		<thead>
+			<tr>
+				<td>UPC</td>
+				<td>Title</td>
+				<td>Price</td>
+				<td>Quantity</td>
+			</tr>
+		</thead>
+		<tbody>
+
+		<?php
+		require("..\settings\mysql.php");
+
+		//Check that a search parameter is inputted
+		$sum = 0.00;
+		$item = array();
+		$items = array();
+		// $db_field 
+
+		if (isset($_POST["upc"])) {
+
+			
+			//set search parameters
+			$upc = mysql_real_escape_string($_POST["upc"]);
+
+			$SQL = "SELECT * FROM item WHERE upc = '$upc'";
+			$result = mysql_query($SQL, $GLOBALS["link"]);
+			
+			if($result == false || mysql_num_rows($result) <= 0)
+				echo "Item does not exist. <br>";
+			else 
+			{	
+				$item = mysql_fetch_assoc($result);
+				
+				// Default to 1 if no quantity set.
+				$quantity = isset($_POST['quantity']) ? $_POST["quantity"] : 1 ;
+				// check stock from DB
+				$stock = $item['stock'];
+
+			
+				// No quantity selected, or insufficient quantity.
+				if (isset($quantity) && $quantity > $stock){
+					echo "Not enough stock for this order."; // TODO: Make this better
+				}
+				// We have sufficient stock, add to the order.
+				else
+				{
+					$items[count($items)+1] = $item;
+					var_dump($items);
+					foreach ($items as $value) 
+					 { ?>
+						<tr>
+							<form method = "post" action = "purchase.php">
+							<td><?php $value['upc']?></td>
+							<td><?php $value['title']?></td>
+							<td><?php $value['price']?></td>
+							<td><?php $value['stock']?></td>
+							<?php $sum =+ ($value['price'] * $quantity)?> 
+							</form>
+							
+						</tr>
+				<?php }
+
+					echo "Item added to purchase. <br>";
+				}
+			}
+		} ?> 
+
+
+
+<!-- 
+		<form method = "post" action = "purchase.php" >
+			<?php
+			foreach ($sale_list as $value) { ?>
+				<tr>$value</tr>;
+
+				
+			<?php }
+			?>			
+ -->
+ 	</tbody>
+	</table>
+	<?php echo "Total sale value: $$sum <br>"; ?>
+</body>
+
+</html>
+
+<!-- //todo:
+// check stock levels before purchase
+// create an order table
+// create receipt 
+// Create payment management 
+// Turn process payment into a function and have the form call it. This will allow the 
+values to be saved, if they are global variables. -->
+

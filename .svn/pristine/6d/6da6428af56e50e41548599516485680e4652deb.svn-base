@@ -1,0 +1,88 @@
+<?php
+
+require("../settings/mysql.php");
+
+if(isset($_POST["username"]) && isset($_POST["password"]) && isset($_POST["user_type"]))
+{
+	$username = $_POST["username"];
+	$password_hash = md5($_POST["password"]);
+	$user_type = $_POST["user_type"];
+	
+	if ($user_type == CUSTOMER) {
+		$sql = "SELECT cid FROM Customer WHERE cid = '$username' AND password = '$password_hash'";
+			
+		$result = mysql_query($sql, $link) or die(mysql_errno($link).": ".mysql_error($link)."\n");
+		$assoc = mysql_fetch_assoc($result);
+		$num_rows = mysql_num_rows($result);
+		
+		if($num_rows > 0) {
+			session_start();
+			$_SESSION['username']=$username;
+			$_SESSION['access']=0;
+			header("Location: ../customer/index.php");
+			die();
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	} else if ($user_type == CLERK && $username == CLERK_UNAME) {
+		if ($password == CLERK_PASSWORD) {
+			session_start();
+			$_SESSION['username'] = CLERK_UNAME;
+			$_SESSION['access'] = CLERK;
+			header("Location: ../clerk/index.php");
+			die();
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	} else if ($user_type == MANAGER && $username == MANAGER_UNAME) {
+		if ($password == MANAGER_PASSWORD) {
+			session_start();
+			$_SESSION['username'] = MANAGER_UNAME;
+			$_SESSION['access'] = MANAGER;
+			header("Location: ../manager/index.php");
+			die();
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	}	
+}
+
+?>
+
+
+<html>
+<head>
+    <script type="text/javascript">
+        window.onload = function() {
+          var admin_link = document.getElementById("admin_link");
+          admin_link.onclick = function() {
+			document.getElementById("user_type_div").style.display="block";
+            return false;
+          }
+        }
+    </script>
+<head>
+<body>
+
+<h1>Login Page</h1>
+
+<?php if(isset($error_msg)){ echo "Error: $error_msg";} ?> 
+
+<form action="login.php" method="POST">
+<div id="user_type_div" style="display:none;">
+User:<select name="user_type">
+  <option value="0"<?php if(isset($user_type) && $user_type == CUSTOMER){ echo ' selected="selected"';} ?>">Customer</option>
+  <option value="1"<?php if(isset($user_type) && $user_type == CLERK){ echo ' selected="selected"';} ?>>Clerk</option>
+  <option value="2"<?php if(isset($user_type) && $user_type == MANAGER){ echo ' selected="selected"';} ?>>Manager</option>
+</select>
+</div>
+Username: <input type="text" name="username"<?php if(isset($username)){ echo " value=$username";} ?>><br>
+Password: <input type="text" name="password"><br>
+<input type="submit">
+</form>
+<br>
+<div class="link">No account? <a href="../customer/register.php">Register here</a><div>
+<div class="link"><a id="admin_link" href="#">Clerk/Manager login</a><div>
+</body>
+
+</html>

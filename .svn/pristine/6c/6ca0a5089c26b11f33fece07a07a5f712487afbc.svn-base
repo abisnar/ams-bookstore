@@ -1,0 +1,124 @@
+<?php
+
+session_start();
+
+function not_enough_stock() {
+		// TODO: return with error code!
+		header("Location: search.php?error=0");
+		die();
+}
+
+function update_cart() {
+	if(isset($_POST["add_to_cart"]) || isset($_POST["update_cart"])) {
+		$cart = array();
+		if(isset($_SESSION["cart"])) {
+			$cart = $_SESSION["cart"];
+		} else {
+			$_SESSION["cart"] = $cart;
+		}
+		
+		$stock = 0;
+		$sql = "SELECT stock FROM Item WHERE upc = '".$_POST["upc"]."'";
+		$result = mysql_query($sql, $link);
+		if($result && mysql_num_rows($result) > 0) {
+			$db_field = mysql_fetch_assoc($result);
+			$stock = $result['stock'];
+		}
+		
+		if(isset($_POST["add_to_cart"])) {
+			if(isset($cart[$_POST["upc"]])) {
+				if ($stock < ($cart[$_POST["upc"]] + $_POST["quantity"])) {
+					not_enough_stock();
+				}
+				$cart[$_POST["upc"]] += $_POST["quantity"];
+			} else {
+				if ($stock < $_POST["quantity"]) {
+					not_enough_stock();
+				}
+				$cart[$_POST["upc"]] = 0 + $_POST["quantity"];
+			}
+		}
+		if(isset($_POST["update_cart"])) {
+			if(isset($cart[$_POST["upc"]])) {
+				if ($stock < $_POST["quantity"]) {
+					not_enough_stock();
+				}
+				$cart[$_POST["upc"]] = 0 + $_POST["quantity"];
+			}
+		}
+		$_SESSION["cart"] = $cart;
+		header("Location: cart.php");
+		die();
+	}
+}
+
+require("../settings/mysql.php");
+update_cart();
+
+?>
+
+<html>
+<head>
+<style>
+div.item{
+  width: 400px;
+  height: 50px;
+  border-style:solid;
+border-width:1px;
+margin-bottom: 2px;
+}
+div.cart_num{
+ vertical-align: bottom;
+}
+
+div.block{
+  overflow:hidden;
+  float: left;
+}
+div.block label{
+  width:160px;
+  display:block;
+  float:left;
+  text-align:left;
+}
+</style>
+</head>
+<body>
+<h1>Shopping cart</h1>
+<?php
+
+	foreach($_SESSION["cart"] as $upc=>$quantity) {
+		if($quantity > 0) {
+			$sql = "SELECT title, year FROM Item WHERE upc = '$upc'";
+			$result = mysql_query($sql, $link);
+			if(mysql_num_rows($result) > 0) {
+				$db_field = mysql_fetch_assoc($result);
+				echo "<div class='item'>";
+				echo "<div class='item_desc' style='float:left;'>";
+				echo "<span class='block title'>".$db_field['title'].'</span> ('.$db_field['year'].')';
+				$sql = "SELECT name FROM LeadSinger WHERE upc = '$upc'";
+				$result_lead = mysql_query($sql, $link);
+				if(mysql_num_rows($result) > 0) {
+					$db_field_lead = mysql_fetch_assoc($result_lead);
+					echo '<br>by <b>'.$db_field_lead['name'].'</b>';
+				}
+				echo "</div>";
+				echo "<div class='cart_num' style='float:right;'>";
+				echo '<form method="post" id="update_cart" action="cart.php">
+						<input type="hidden" name="upc" id="upc" value="'.$upc.'">
+						<input type="input"  name="quantity" id="upc_'.$upc.'" value="'.$quantity.'" size="3">
+						<input type="submit" name="update_cart" id="update_cart" value="Update cart">
+						</form>';
+				echo '</div>';
+				echo '</div>';
+			}
+		}
+	}
+?>
+<br />
+
+<a href="search.php">Return to search</a>
+<a href="checkout.php">Checkout</a>
+
+<body>
+</html>

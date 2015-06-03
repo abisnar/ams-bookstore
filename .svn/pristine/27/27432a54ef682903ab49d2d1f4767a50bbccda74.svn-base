@@ -1,0 +1,106 @@
+<?php
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+has_access(MANAGER);
+print_page_start();
+print_manager_top(MANAGER_DD_TOP_SALES) ?>
+
+<h2>Top Selling Items</h2>
+
+<p>
+
+Please select a time period: <br>
+
+<form method="post" action="top_sales.php">
+<div class="row">
+  <div class="col-lg-3">
+    <div class="input-group">
+     <span class="input-group-addon">From:</span>
+      <input type="date" class="form-control" name="start_date"> 
+    </div><!-- /input-group -->
+  </div><!-- /.col-lg-3 -->
+  <div class="col-lg-3">
+    <div class="input-group">
+    <span class="input-group-addon">To:</span>
+      <input type="date" class="form-control" name="end_date"> 
+    </div><!-- /input-group -->
+  </div><!-- /.col-lg-3 -->
+    <div class="col-lg-3">
+    <div class="input-group">
+      <input type="number" class="form-control" placeholder="# of Items..." name="top">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="submit" name="submit">Submit</button>
+      </span>
+    </div><!-- /input-group -->
+  </div><!-- /.col-lg-3 -->
+</div><!-- /.row --> 	
+</form>
+
+<?php
+	 if (empty($_POST["start_date"]) || empty($_POST["end_date"])) {
+
+		echo "One or more dates are not set. Please enter both a start and end date.";
+		
+	 } else if (empty($_POST["top"]) || $_POST["top"] < 0) {
+
+		echo "Must enter a valid number of top sellers to display.";
+
+	} else if (isset($_POST["start_date"]) && isset($_POST["end_date"]) && isset($_POST["top"])) {
+
+	$start_date = mysql_real_escape_string($_POST["start_date"]);
+	$end_date = mysql_real_escape_string($_POST["end_date"]);
+	$top_items = mysql_real_escape_string($_POST["top"]);
+
+	if ($start_date > $end_date) {
+
+		echo "Error: Start date is before end date!";
+
+	} else {
+		$SQL = "SELECT I.upc, I.title, I.category, SUM(PI.qty) AS units_sold, I.stock
+		FROM Item I, PurchaseItem PI, Purchase P
+		WHERE I.upc = PI.upc AND P.receiptId = PI.receiptId AND P.date BETWEEN '$start_date' AND '$end_date'
+		GROUP BY I.upc
+		ORDER BY units_sold DESC"; 
+
+		
+		$result = mysql_query($SQL, $link);
+	
+	?>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<td> # </td>
+				<td> UPC </td>
+				<td> Name </td>
+				<td> Category</td>
+				<td align="center"> Units Sold </td>
+				<td align="center"> Current Stock </td>
+			</tr>
+		</thead>
+		<tbody>
+
+<?php
+		$i = 0;
+		while($i < $top_items && $db_field = mysql_fetch_assoc($result)) {
+?>
+			<tr>
+				<td><?php echo $i + 1 ?></td> 
+				<td><?php echo $db_field["upc"]?></td>
+				<td><?php echo $db_field["title"]?></td>
+				<td><?php echo $db_field["category"]?></td>
+				<td align="center"><?php echo $db_field["units_sold"]?></td>
+				<td align="center"><?php echo $db_field["stock"]?></td>
+			</tr>
+<?php
+		$i++;
+		}
+	}
+}
+
+
+?>
+
+</tbody>
+</table>

@@ -1,0 +1,139 @@
+<?php
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+print_page_start();
+print_manager_top(MANAGER_DD_SALES_REPORT);
+
+function print_report() {
+
+	if (empty($_POST['date']) && isset($_POST['date'])) { ?>
+
+		<div class="alert alert-danger" style="width: 885px">
+			<button type="button" class="close" data-dismiss="alert"> </button>
+			<strong> Error! </strong> No date set.
+		</div>
+
+	<?php } else if (!empty($_POST['date'])) {
+
+		$date = mysql_real_escape_string($_POST['date']);
+		$SQL = "SELECT I.upc, I.category, I.price, SUM(PI.qty) AS units_sold
+			FROM Item I, PurchaseItem PI, Purchase P
+			WHERE I.upc = PI.upc AND PI.receiptId = P.receiptId AND P.date = '$date'
+			GROUP BY I.upc
+			ORDER BY I.category";
+
+		$result = mysql_query($SQL, $GLOBALS['link']);
+		$num_rows = mysql_num_rows($result);
+
+		if ($num_rows == 0) { ?>
+
+			<div class="alert alert-warning" style="width: 885px">
+				<button type="button" class="close" data-dismiss="alert"> </button>
+				<strong> Warning! </strong> No sales to view.
+			 </div>
+
+		<?php
+		} else {
+
+
+		echo '<div class="panel">
+				<table class="table">
+				<thead>
+					<tr>
+					<td>UPC</td>
+					<td>Category</td>
+					<td>Price</td>
+					<td>Units Sold</td>
+					<td>Total</td>
+					</tr>
+				</thead>
+				<tbody>';
+
+				$last_categ = "NULL";	// last category read
+				$total_categ = 0;		// total sales for current category
+				$total_daily = 0;		// total daily sales
+
+				while ($db_field = mysql_fetch_assoc($result)) {
+
+					if ($last_categ != $db_field['category'] && $last_categ != "NULL") {
+
+						echo '<tr class="active">
+							 	 <td> </td>
+							 	 <td align="center"> Total: </td>
+							 	 <td> </td>
+							 	 <td> </td>
+							 	 <td align="right">' .$total_categ. '</td>
+							  </tr>';
+
+						$total_categ = 0;	// reset category total
+
+					}
+
+					echo'<tr>
+							<td align="center">' .$db_field['upc']. '</td>
+							<td align="center">' .$db_field['category']. '</td>
+							<td align="center">' .$db_field['price']. '</td>
+							<td align="center">' .$db_field['units_sold']. '</td>
+							<td align="right">' .$db_field['price'] * $db_field['units_sold'].'</td>
+						</tr>';
+
+					$last_categ = $db_field['category'];
+					$total_categ += ($db_field['price']) * ($db_field['units_sold']);
+					$total_daily += $total_categ;
+
+				}
+
+				echo '<tr class="active">
+						<td> </td>
+						<td align="center"> Total: </td>
+						<td> </td>
+						<td> </td>
+						<td align="right">' .$total_categ. '</td>
+					</tr>
+					<!-row spacing-->
+					<tr>
+						<td> </td>
+						<td> </td>
+						<td> </td>
+						<td> </td>
+						<td> </td>
+					</tr>
+					<tr class="success">
+						<td> </td>
+						<td>Total Daily Sales: </td>
+						<td> </td>
+						<td> </td>
+						<td align="right">' .$total_daily. '</td>
+					</tr><br>
+					</tbody>
+					</table>
+					</div>';
+					
+		}
+	}	 
+}
+?>
+
+<h2>Daily Sales Report</h2>
+
+<form method="post" action="http://<?php echo $_SERVER['SERVER_NAME']; ?>/manager/sales_report.php">
+
+<p>
+
+<p> Enter date: 
+<div class="input-group" style="width: 300px">
+  <input type="date" class="form-control" name="date" value="<?php if (isset($_POST['date'])) { echo $_POST['date']; } ?>">
+  <span class="input-group-btn">
+  	  <button type="submit" class="btn btn-default"> Submit </button>
+  </span>
+</div>
+
+</form>
+
+<?php
+print_report();
+print_page_end();
+?>

@@ -1,0 +1,214 @@
+<?php
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access(MANAGER);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+$UPC = mysql_real_escape_string(isset($_POST["UPC"]));
+$UPC2 = mysql_real_escape_string(isset($_POST["UPC2"]));
+$title = mysql_real_escape_string(isset($_POST["Title"]));
+$type = mysql_real_escape_string(isset($_POST["Type"]));
+$category = mysql_real_escape_string(isset($_POST["Category"]));
+$company = mysql_real_escape_string(isset($_POST["Company"]));
+$year = mysql_real_escape_string(isset($_POST["Year"]));
+$price = mysql_real_escape_string(isset($_POST["Price"]));
+$stock = mysql_real_escape_string(isset($_POST["Quantity"]));
+
+$songTitle = mysql_real_escape_string(isset($_POST["SongTitle"]));
+$singerName = mysql_real_escape_string(isset($_POST["SingerName"]));
+
+
+function update(){
+	switch($i){
+		case 0:
+			$SQL = "UPDATE Item
+					SET UPC = '$UPC2';
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 1:
+			$SQL = "INSERT into HasSong
+					VALUES ('$UPC', '$songTitle')";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 2:
+			$SQL = "UPDATE Item
+					SET Title = '$title';
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 3:
+			$SQL = "INSERT into HasSong
+					VALUES ('$UPC', '$songTitle')";
+			$result = mysql_query($SQL);
+		break;
+
+		case 4:
+			$SQL = "DELETE from HasSong
+					WHERE upc = '$UPC'AND SongTitle ='$songTitle')";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 5:
+			$SQL = "INSERT into LeadSinger
+					VALUES ('$UPC', '$singerName')";
+			$result = mysql_query($SQL);
+		break;
+
+		case 6:
+			$SQL = "UPDATE Item
+					SET Type = '$type';
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 7:
+			$init_stock = "SELECT Stock
+					FROM Item 
+					WHERE upc = '$UPC'";
+			$result_stock = mysql_query($init_stock);
+
+			$SQL = "UPDATE Item
+					SET Quantity = $result_stock + $stock;
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 8:
+			$SQL = "UPDATE Item
+					SET Price = '$price';
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+
+		case 9:
+			$SQL = "UPDATE Item
+					SET Category = '$category';
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+
+		case 10:
+			$SQL = "UPDATE Item
+					SET Year = '$year';
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 11:
+			$SQL = "UPDATE Item
+					SET Company = '$company';
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+
+		default:
+		return;
+	}
+}
+
+
+print_page_start();
+
+?>
+<h1>What Item Do You Want to Update?</h1>
+<form action="update_item.php" method="post"name="links">
+<h2>Choose an Option</h2>
+<select name="dropdown" onchange="update()">
+<option selected>Please Select one</option>
+<option value="0">Update UPC</option>
+<option value="1">Update Title</option>
+<option value="2">Add Songs</option>
+<option value="3">Remove Song</option>
+<option value="4">Add Lead Singers</option>
+<option value="5">Update Type</option>
+<option value="6">Update Stock</option>
+<option value="7">Update Price</option>
+<option value="8">Update Category</option>
+<option value="9">Update Inventory</option>
+<option value="10">Update Year</option>
+<option value="11">Update Company</option>
+</select>
+<INPUT type = "submit" value="OK">
+</INPUT>
+</form>
+
+<h2>Change UPC</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	New UPC: 			<input type="text" name="UPC2"<?php if(isset($UPC2)){echo "value=$UPC2";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Change Item Title</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Title:     			<input type="text" name="Title"<?php if(isset($title)){ echo " value=$title";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Change Item Type</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Type:     			<input type="text" name="Title"<?php if(isset($type)){ echo " value=$title";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Change Item Category</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Category:    		<input type="text" name="Category"<?php if(isset($category)){ echo " value=$category";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Change Item Company</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Company: 			<input type="text" name="Company"<?php if(isset($company)){ echo " value=$company";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Change Price</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Price:  			<input type="text" name="Price"<?php if(isset($price)){ echo " value=$price";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Change Year</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Year:     			<input type="text" name="Title"<?php if(isset($year)){ echo " value=$year";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Update Stock Quantity</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Quantity: 			<input type="text" name="Quantity"<?php if(isset($stock)){ echo " value=$stock";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Add Song Title</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Song Title 			<input type="text" name="Song Title"<?php if(isset($songTitle)){echo "value= $songTitle";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+
+<h2>Change Singer</h2>
+<form method="post" action="update_item.php">
+	UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+	Singer Name 		<input type="text" name="Singer Name"<?php if(isset($singerName)){echo "value=$singerName";} ?>><br>
+<INPUT type = "submit" value = "OK">
+</form>
+<?php
+print_page_end();
+?>

@@ -1,0 +1,143 @@
+<?php
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access(MANAGER);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+print_page_start();
+print_manager_top(MANAGER_DD_UPDATE_ORDER);
+
+?>
+<h2>Update Order</h2>
+
+<p>
+	
+<form method="post" action="updateOrder.php">
+<div class="input-group" style="width: 300px">
+  <input type="text" class="form-control" name="rid" placeholder="Receipt ID">
+  <span class="input-group-btn">
+  	  <button type="submit" class="btn btn-default"> Submit </button>
+  </span>
+</div>
+
+</form>
+
+
+<?php
+	if (isset($_POST['success'])) {
+
+		echo'<div class="alert-success">
+				<button class="close" data-dismiss="alert">&times;</button>
+				<strong> Success! </strong> Delivery date updated!
+			 	 </div>';
+
+	}
+	if (empty($_POST["rid"]))
+
+		echo "Please input a receipt ID number.";
+
+	else {
+		$rid = $_POST["rid"];
+
+		$SQL = "SELECT receiptId, cid, expectedDate
+				FROM Purchase
+				WHERE receiptId = '$rid'";
+
+		$result = mysql_query($SQL, $link);
+		$num_rows = mysql_num_rows($result);
+
+		if ($num_rows == 0) {
+
+			echo'<div class="alert-danger">
+				<button class="close" data-dismiss="alert">&times;</button>
+				<strong> Error! </strong> No such ID exists.
+			 	 </div>';
+	
+		} else {
+
+		$SQL = "SELECT I.upc, I.title, PI.qty
+		FROM Item I, PurchaseItem PI, Purchase P 
+		WHERE P.receiptId = '$rid' AND PI.receiptId = P.receiptId AND PI.upc = I.upc";
+
+		$result2 = mysql_query($SQL, $link);
+		$num_rows = mysql_num_rows($result2);
+			
+		
+		while($db_field = mysql_fetch_assoc($result)) {
+		?>
+
+		<table class="table">
+		<thead>
+			<tr>
+				<td align="center"> Receipt ID </td>
+				<td align="center"> Customer ID  </td>
+				<td align="center"> Expected Date </td>
+				<td align="center"> Items </td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td align="center"><?php echo $db_field["receiptId"]?></td>
+				<td align="center"><?php echo $db_field["cid"]?></td>
+				<td align="center"><?php echo $db_field["expectedDate"]?></td>
+				<td>
+					<table class="table table-striped" align="center">
+						<thead>
+							<tr>
+								<td> UPC </td>
+								<td> Title </td>
+								<td align="center"> Qty </td>
+						<?php while($db_field2 = mysql_fetch_assoc($result2)) { ?>
+								<tr>
+									<td><?php echo $db_field2["upc"]?></td>
+									<td><?php echo $db_field2["title"]?></td>
+									<td align="center"><?php echo $db_field2["qty"]?></td>
+								</tr>
+						<?php } ?>
+					</table>
+				</td>
+						
+			</tr>
+		</tbody>
+		</table>
+		<br>
+
+		<?php
+		}
+	}
+}
+
+	if (!empty($rid) && $num_rows != 0) { ?>
+
+	 <form method="post" action="updateOrder.php">
+	 	Set the delivery date: 
+		<div class="input-group" style="width: 300px">
+			<input type="hidden" name="rid" value="<?php echo $rid ?>">
+			<input type="hidden" name="success">
+        	<input type="date" class="form-control" name="curr_date" placeholder="yyyy-dd-mm">
+  			<span class="input-group-btn">
+  				<button type="submit" class="btn btn-default"> Submit </button>
+  			</span>
+		</div>
+	 </form>
+
+<?php
+}	
+
+	if (!empty($_POST["curr_date"])) {
+
+	$date = mysql_real_escape_string($_POST["curr_date"]);
+	$rid = mysql_real_escape_string($_POST["rid"]);
+	$SQL = "UPDATE Purchase
+			SET deliveredDate = '$date'
+			WHERE receiptId = '$rid'";
+
+	$result = mysql_query($SQL, $link);
+	
+}
+	
+?>
+<?php
+print_page_end();
+?>

@@ -1,0 +1,108 @@
+<?php
+
+require("../settings/mysql.php");
+
+function add_Item() {
+	echo $_POST["UPC"];
+	if (isset($_POST["UPC"]) && isset($_POST["Title"]) && 
+		isset($_POST["Type"]) && isset($_POST["Category"]) && isset($_POST["Company"]) &&
+		isset($_POST["Year"]) && isset($_POST["Price"]) && isset($_POST["Quantity"])) {
+
+	echo "about to set UPC variable";
+		// check if album exists within the system
+		$UPC = mysql_real_escape_string($_POST["UPC"]);
+
+	echo "checking if UPC exsist";
+		if(empty($UPC)) {
+			$GLOBALS["error_msg"] = "UPC cannot be empty!";
+			return;
+		}
+	echo "before the query";
+		$SQL = "SELECT * FROM Item WHERE upc = '$UPC'";
+		// $link didn't work for me... deleted the $link parameter in mysql_query.. now it works
+		$result = mysql_query($SQL);
+		$num_rows = mysql_num_rows($result);
+
+		// if no rows return, add album to Items, and add songs to hasSong
+		if($num_rows == 0) {
+			$UPC= mysql_real_escape_string($_POST["UPC"]);}
+			$title = mysql_real_escape_string($_POST["Title"]);
+			$type = mysql_real_escape_string($_POST["Type"]);
+			$category = mysql_real_escape_string($_POST["Category"]);
+			$company = mysql_real_escape_string($_POST["Company"]);
+			$year = mysql_real_escape_string($_POST["Year"]);
+			$price = mysql_real_escape_string($_POST["Price"]);
+			$stock = mysql_real_escape_string($_POST["Quantity"]);
+
+			$SQL = "INSERT INTO Item VALUES ('$UPC', '$title', '$type', '$category', '$company','$year','$price','$stock')";
+			$result = mysql_query($SQL);
+			echo $result;
+			// Item has been added to the Item table
+			}
+		if($num_rows !=0 && ($title =! $_POST['Title'])) {
+			$SQL = 'SELECT * Item
+					WHERE  upc = $UPC';
+			echo $SQL + "already exsists... do you want to update the stock?";
+		} else{
+			$old_Quantity = 'SELECT Quantity
+					FROM Item
+					WHERE upc = $UPC';
+
+			$update_Quantity = 'UPDATE Item
+							SET Quantity = $old_Quantity + &stock;
+							WHERE upc = $UPC';
+
+		}
+
+	}
+
+
+function remove_item() {
+	if (isset($_POST["UPC"]) && isset($_POST["Title"]) && 
+		isset($_POST["Type"]) && isset($_POST["Category"]) && isset($_POST["Company"]) &&
+		isset($_POST["Year"]) && isset($_POST["Price"]) && isset($_POST["Quantity"])) {
+
+		$UPC = mysql_real_escape_string($_POST["UPC"]);
+
+	$SQL = "DELETE FROM Item WHERE upc = $UPC";
+
+}
+}
+
+
+$error_msg = "";
+?>
+
+<html>
+<h1>Add New Item</h1>
+<body>
+
+	<?php if (!empty($error_msg)) { echo "<div class=\"error\"> Error: $error_msg</div>";}  ?>
+
+	<form method="post" action="updateInventory.php">
+		UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+		Title:     			<input type="text" name="Title"<?php if(isset($title)){ echo " value=$title";} ?>><br>
+		Type: 				<input type="text" name="Type"<?php if(isset($type)){ echo " value=$type";} ?>><br>
+		Category:         	<input type="text" name="Category"<?php if(isset($category)){ echo " value=$category";} ?>><br>
+		Company:      		<input type="text" name="Company"<?php if(isset($company)){ echo " value=$company";} ?>><br>
+		Price:      		<input type="text" name="Price"<?php if(isset($price)){ echo " value=$price";} ?>><br>
+		Year:      			<input type="text" name="Year"<?php if(isset($year)){ echo " value=$year";} ?>><br>
+		Quantity:      		<input type="text" name="Quantity"<?php if(isset($stock)){ echo " value=$stock";} ?>><br>
+		<input type="submit" name="submit">
+	</form>
+	<?php add_Item() ?>
+
+
+<h1>Remove Item</h1>
+	<?php if (!empty($error_msg)) { echo "<div class=\"error\"> Error: $error_msg</div>";}  ?>
+	<form method="post" action="updateInventory.php">
+		UPC:     			<input type="text" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>><br>
+		<input type="submit" name="submit">
+	</form>
+	<?php remove_Item() ?>
+
+
+
+</body>
+
+</html>

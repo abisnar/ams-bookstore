@@ -1,0 +1,26 @@
+<?php
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access(CLERK);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/clerk/clerkfunctions.php");
+
+clear_order();
+clear_return();
+print_page_start();
+
+?>
+	<h1>Welcome, nameless clerk.</h1>
+	<p>You can either process a purchase or a return.</p>
+	<div class="btn-group">
+	<form action="purchase.php">
+    	<input type="submit" class="btn btn-primary" value="Purchase">
+	</form>
+	
+	<form action="return.php">
+    	<input type="submit" class="btn btn-primary" value="Return">
+	</form>
+</div>
+
+<?php print_page_end() ?>

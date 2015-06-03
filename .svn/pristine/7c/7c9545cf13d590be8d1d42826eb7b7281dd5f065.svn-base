@@ -1,0 +1,88 @@
+<?php 
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access(CLERK);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/clerk/clerkfunctions.php");
+
+print_page_start();
+
+?>
+     <h3>Final Purchase Contents</h3>
+	<?php
+		print_order();
+	?>
+
+	<div id="summaryDiv">
+		<button type="button" id="cardPaymentButton" class="btn btn-default btn-sm" onclick="showCard()">Pay with Card</button>
+		<button type="button" id="cashPaymentButton" class="btn btn-default btn-sm" onclick="showCash()">Pay with Cash</button>
+		<!-- put contents here -->
+	</div>
+	<br>
+	<div id="cardPaymentDiv" style="display:none" >
+		<form method="post" name="cardPay" style="width: 300px" action="process_card_pay.php">
+			<div class="form-group" style="width: 300px">
+				<label for "cardNo">Card Number</label>
+			<input type="text" class="form-control" placeholder="Card Number" name="cardNo" id="cardNo">
+		</div>
+		<div class="form-group" style="width: 300px">
+			<label for="cardEx">Expiry Date</label>
+			<input type="date" class="form-control" name="cardEx" id="cardEx"><br>
+		</div>
+	  		<button type="submit" class="btn btn-success" onclick="checkFormData()" name="Submit">Proceed with Card Purchase</button>
+	  	</form>
+		<?php
+		
+		?>
+	</div>
+
+	<div id="cashPaymentDiv" style="display:none">
+		<form method="post" name="cardPay" action="process_cash_pay.php">
+			<br>
+	  		<button type="submit" class="btn btn-success" name="Submit">Proceed with Cash Purchase</button>
+		</form>
+	</div>
+		<script type="text/javascript">
+		function showCard(){
+			document.getElementById('cardPaymentDiv').style.display="block";
+			document.getElementById('cashPaymentDiv').style.display="none";
+		}
+		function showCash(){
+			document.getElementById('cardPaymentDiv').style.display="none";
+			document.getElementById('cashPaymentDiv').style.display="block";
+		}
+		function checkFormData(){
+			var x=document.forms["cardPay"]["cardNo"].value;
+			var y=document.forms["cardPay"]["cardEx"].value;
+			if (x==null || x==""){
+				alert("Card number must be filled out");
+				return false;
+			}
+			if (y==null || y==""){
+				alert("Card expiry must be filled out");
+				return false;
+			}
+			else{
+				var isVerified = confirm("Is the card valid?");
+				if (isVerified){
+					return true;
+				}
+				else{
+					var isCashOrder = confirm('Does the customer want to use cash?');
+					if (isCashOrder){
+						showCash();
+						return false;
+					}
+					else{
+						alert('cancel the order');
+						clear_order();
+						return false;
+					}
+				}
+			}
+		}
+	</script>
+
+<?php print_page_end() ?>
+</html>

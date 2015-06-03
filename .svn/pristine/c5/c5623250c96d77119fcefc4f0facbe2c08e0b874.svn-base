@@ -1,0 +1,106 @@
+
+
+
+<html>
+<h1>Product Search</h1>
+
+<body>
+
+<form method="post" action="search.php">
+	Search by: <select name="search">
+				<option value="all">All</option>
+				<option value="upc">UPC</option>
+				<option value="title">Title</option>
+				<option value="price">Price</option>
+				<option value="type">Type</option>	
+				<option value="category">Category</option>
+				<option value="leadsinger">Lead Singer</option>
+			</select>
+	<input type="text" name="input">
+<p>
+<table>
+<thead>
+	<tr>
+		<td>UPC</td>
+		<td>Title</td>
+		<td>Price</td>
+		<td>Type</td>
+		<td>Category</td>
+	</tr>
+</thead>
+<tbody>
+</p>
+<?php
+require("C:\wamp\www\settings\mysql.php");
+
+// check that a search parameter was inputted
+if (isset($_POST["input"])) {
+
+	// set the drop down parameters
+	$search = $_POST["search"];
+	$input = $_POST["input"];
+
+	if ($search == "all") {
+
+		$SQL = "SELECT * FROM Item";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "upc") {
+
+	$SQL = "SELECT * FROM Item WHERE upc = '$input'";
+	$result = mysql_query($SQL, $link);
+
+	} else if ($search == "title") {
+
+		$SQL = "SELECT * FROM Item WHERE title = '$input'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "price") {
+
+		$SQL = "SELECT * FROM Item WHERE price <= '$input'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "type") {
+
+		$SQL = "SELECT * FROM Item WHERE type = '$input'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "category") {
+
+		$SQL = "SELECT * FROM Item WHERE category = '$input'";
+		$result = mysql_query($SQL, $link);
+
+	} else if ($search == "leadsinger") {
+
+		$SQL = "SELECT * FROM Item I, LeadSinger S WHERE S.name = '$input' AND I.upc = S.upc";
+		$result = mysql_query($SQL, $link);
+	}
+
+	if ($result == false)
+		echo "Query failed. <br>";
+	else
+		echo "Query sucessful. <br>";
+
+?>
+<form action="purchase.php" method="post">
+	<?php 
+	while($db_field = mysql_fetch_assoc($result)) {
+	?>
+		<tr>
+			<td><input type="checkbox" name="upc"><?php echo $db_field['upc']?></td>
+			<td><?php echo $db_field['title']?></td>
+			<td><?php echo $db_field['price']?></td>
+			<td><?php echo $db_field['type']?></td>
+			<td><?php echo $db_field['category']?></td>
+			
+		</tr>
+		<input type="submit" name="submit">
+		<?php
+	}
+}
+?>
+</form>
+
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+<?php
+
+require("../settings/mysql.php");
+
+if(isset($_POST["username"]) && isset($_POST["password"]) && isset($_POST["user_type"]))
+{
+	$username = $_POST["username"];
+	$password_hash = md5($_POST["password"]);
+	$user_type = $_POST["user_type"];
+	
+	if ($user_type == "0") {
+		$sql = "SELECT cid FROM Customer WHERE cid = '$username' AND password = '$password_hash'";
+			
+		$result = mysql_query($sql, $link) or die(mysql_errno($link).": ".mysql_error($link)."\n");
+		$assoc = mysql_fetch_assoc($result);
+		$num_rows = mysql_num_rows($result);
+		
+		if($num_rows > 0) {
+			session_start();
+			$_SESSION['username']=$username;
+			$_SESSION['access']=0;
+			header("Location: ../customer/index.php");
+			die();
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	} else {
+		if((($user_type == "1" && $username == "clerk") || ($user_type == "2" && $username == "manager"))
+		    && $password = "password") {
+			session_start();
+			$_SESSION['username']=$username;
+			$_SESSION['access']=$user_type;
+			header("Location: ../$username/index.php");
+			die();
+		} else {
+			$error_msg = "Wrong Credentials!";
+		}
+	}
+	
+
+}
+
+?>
+
+
+<html>
+
+<body>
+<?php if(isset($error_msg)){ echo "Error: $error_msg";} ?> 
+
+<form action="login.php" method="POST">
+User:<select name="user_type">
+  <option value="0"<?php if(isset($user_type) && $user_type == 0){ echo ' selected="selected"';} ?>>Customer</option>
+  <option value="1"<?php if(isset($user_type) && $user_type == 1){ echo ' selected="selected"';} ?>>Clerk</option>
+  <option value="2"<?php if(isset($user_type) && $user_type == 2){ echo ' selected="selected"';} ?>>Manager</option>
+</select> <br>
+Username: <input type="text" name="username"<?php if(isset($username)){ echo " value=$username";} ?>><br>
+Password: <input type="text" name="password"><br>
+<input type="submit">
+</form>
+</body>
+
+</html>

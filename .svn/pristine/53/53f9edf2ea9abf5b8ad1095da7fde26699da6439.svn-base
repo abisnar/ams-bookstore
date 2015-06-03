@@ -1,0 +1,96 @@
+<?php
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+has_access(CUSTOMER);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+if(isset($_GET["error"])) {
+	switch($_GET["error"]) {
+		case 0:
+			$GLOBALS["error_msg"] = "Not enough item in stock!";
+			break;
+		case 1: 
+			$GLOBALS["error_msg"] = "The item you requested does not exist!";
+			break;
+		case 2:
+			$GLOBALS["error_msg"] = "Must be a customer to make online purchases. If you are a clerk/manager please sign up for a customer account to make purchases for yourself!";
+			break;
+	}	
+}
+
+print_page_start();
+
+?>
+<h3>Product Search</h3>
+<br>
+	
+<div  id="container">	
+	<form method="get" id="search_form">
+		<div class=> 
+			<br><button type="submit" class="btn btn-default" onclick="return false;" id="addVar">Add Search Terms</button><br>
+		</div>
+		<div>
+			<br><input type="submit" class="btn btn-primary" value="Search" name="submit" id="search_submit">
+		</div>
+	</form>
+</div>
+	
+<script>
+	var startingNo = 0;
+	var $node = "";
+	for(varCount=0;varCount<=startingNo;varCount++){
+		var displayCount = varCount+1;
+		$node += '<div class="form-inline"><select class="form-control" style="width: 300px" name="search'+displayCount+'"><option value="title">Title</option><option value="price">Price</option><option value="type">Type</option><option value="category">Category</option><option value="leadsinger">Lead Singer</option><option value="upc">UPC</option></select>';
+		$node += '<input type="text" class="form-control" style="width: 300px" name="input'+displayCount+'" id="input'+displayCount+'"></div>';
+	}
+	$('#search_form').prepend($node);
+	
+	$('#search_form').on('click', '.removeVar', function(){
+		$(this).parent().remove();
+	});
+
+	$('#addVar').on('click', function(){
+		//new node
+		varCount++;
+		$node = '<div class="form-inline"><span class="removeVar">X</span><select class="form-control" style="width: 300px" name="search'+varCount+'"><option value="title">Title</option><option value="price">Price</option><option value="type">Type</option><option value="category">Category</option><option value="leadsinger">Lead Singer</option><option value="upc">UPC</option></select>';
+		$node += '<input type="text" class="form-control" style="width: 300px" name="input'+varCount+'" id="input'+varCount+'"></div>';
+		$(this).parent().before($node);
+	});
+	
+	$.ajax({
+           type: "GET",
+           url: "search_backend.php",
+           data: window.location.hash.substring(1, window.location.hash.length),
+           success: function(data)
+           {
+		      $("#search_results").html(data);
+           }
+    });
+	
+	$("#search_submit").click(function() {
+
+		var data = $("#search_form").serialize();
+		window.location.hash = data;
+
+		$.ajax({
+			   type: "GET",
+			   url: "search_backend.php",
+			   data: data,
+			   success: function(data)
+			   {
+				  $("#search_results").html(data);
+			   }
+			 });
+
+		return false; // avoid to execute the actual submit of the form.
+	});	
+</script>
+
+<div id="search_results">
+
+</div>
+<?php
+print_page_end();
+?>

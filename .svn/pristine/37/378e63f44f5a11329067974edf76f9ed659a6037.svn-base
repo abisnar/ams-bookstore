@@ -1,0 +1,37 @@
+<?php
+
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+
+if(isset($_SESSION["username"])) {
+	if($_SESSION["access"] >= MANAGER) {
+		header("Location: manager/index.php");
+	} else if($_SESSION["access"] >= CLERK) {
+		header("Location: clerk/index.php");
+	} else if($_SESSION["access"] >= CUSTOMER) {
+		header("Location: customer/index.php");
+	}
+}
+
+print_page_start();
+
+?>
+	<h3>Welcome to our store.</h3>
+	<p>We used to have tons of options, but we've cut most of them due to complexity reasons.</p>
+	<p style="font-size: 85%; color: blue">You have two main options available to you. If you're an existing entity/thing/etc., log in using the Sign In button below.</p>
+
+	<form action="common/login.php">
+    	<input type="submit" value="Sign In">
+	</form>
+
+	<p>If you haven't yet signed your life over to our evil, soulless corporation, you can register below. </p>
+	
+	<form action="customer/register.php">
+    	<input type="submit" value="Register">
+	</form>
+	
+	<p>I'm really not sure what else should go on this page. Maybe a search button?  
+<?php
+print_page_end();
+?>

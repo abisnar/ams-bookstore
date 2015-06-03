@@ -1,0 +1,112 @@
+<html>
+<h1>Product Search</h1>
+<head>
+<style>
+div.cart{
+	width: 300px;
+	border-style:solid;
+	border-width:1px;
+}
+div.block{
+  overflow:hidden;
+  float: left;
+}
+div.block label{
+  width:160px;
+  display:block;
+  float:left;
+  text-align:left;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+</head>
+<body>
+
+<div class="cart">
+<?php 
+session_start();
+$item_num = 0;
+var_dump($_SESSION["cart"]);
+if(isset($_SESSION["cart"])) {
+	foreach($_SESSION["cart"] as $upc=>$quantity) {
+		if ($quantity > 0) {
+			$item_num += $quantity;
+		}
+	}
+	
+} echo $item_num;
+?>
+
+items in cart (<a href="checkout.php">Proceed to checkout</a>)
+</div>
+<br>
+	
+<div id="container">	
+	<form method="get" id="search_form">
+		<div> 
+			<span id="addVar">Add Search Terms</span>
+		</div>
+		<div>
+			<input type="submit" value="Search" name="submit" id="search_submit">
+		</div>
+	</form>
+</div>
+	
+<script>
+	var startingNo = 0;
+	var $node = "";
+	for(varCount=0;varCount<=startingNo;varCount++){
+		var displayCount = varCount+1;
+		$node += '<div><select name="search'+displayCount+'"><option value="upc">UPC</option><option value="title">Title</option><option value="price">Price</option><option value="type">Type</option><option value="category">Category</option><option value="leadsinger">Lead Singer</option></select>';
+		$node += '<input type="text" name="input'+displayCount+'" id="input'+displayCount+'"></div>';
+	}
+	$('#search_form').prepend($node);
+	
+	$('#search_form').on('click', '.removeVar', function(){
+		$(this).parent().remove();
+	});
+
+	$('#addVar').on('click', function(){
+		//new node
+		varCount++;
+		$node = '<div><span class="removeVar">X</span><select name="search'+varCount+'"><option value="upc">UPC</option><option value="title">Title</option><option value="price">Price</option><option value="type">Type</option><option value="category">Category</option><option value="leadsinger">Lead Singer</option></select>';
+		$node += '<input type="text" name="input'+varCount+'" id="input'+varCount+'"></div>';
+		$(this).parent().before($node);
+	});
+	
+	$.ajax({
+           type: "GET",
+           url: "search_backend.php",
+           data: window.location.hash.substring(1, window.location.hash.length),
+           success: function(data)
+           {
+		      $("#search_results").html(data);
+           }
+    });
+	
+	$("#search_submit").click(function() {
+
+		var data = $("#search_form").serialize();
+		window.location.hash = data;
+
+		$.ajax({
+			   type: "GET",
+			   url: "search_backend.php",
+			   data: data,
+			   success: function(data)
+			   {
+				  $("#search_results").html(data);
+			   }
+			 });
+
+		return false; // avoid to execute the actual submit of the form.
+	});	
+</script>
+
+<div id="search_results">
+
+</div>
+
+</body>
+</html>

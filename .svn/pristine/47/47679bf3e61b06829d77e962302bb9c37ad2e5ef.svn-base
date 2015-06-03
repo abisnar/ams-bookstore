@@ -1,0 +1,12 @@
+<?php
+
+echo $_POST["upc"];
+
+?>
+
+<html>
+<h1>BUY IT YOU LEMMING! MUAHAHAHAHA!</h1>
+
+
+
+</html>

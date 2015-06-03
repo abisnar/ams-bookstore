@@ -1,0 +1,267 @@
+<?php
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+require_once($_SERVER['DOCUMENT_ROOT']."/common/access.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/settings/mysql.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/session_start.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/common/print_base.php");
+has_access(MANAGER);
+print_page_start();
+print_manager_top(MANAGER_DD_UPDATE_INVENTORY);
+
+
+function update($i){
+echo "set variables";
+if (isset($_POST["UPC"])){
+	$UPC = mysql_real_escape_string($_POST["UPC"]);
+}
+if (isset($_POST["Title"])){
+	$title = mysql_real_escape_string($_POST["Title"]);
+}
+if (isset($_POST["Category"])){
+	$category = mysql_real_escape_string($_POST["Category"]);
+}
+if (isset($_POST["Type"])){
+	$type = mysql_real_escape_string($_POST["Type"]);
+}
+if (isset($_POST["Company"])){
+	$company = mysql_real_escape_string($_POST["Company"]);
+}
+if (isset($_POST["Year"])){
+	$year = mysql_real_escape_string($_POST["Year"]);
+}
+if (isset($_POST["Price"])){
+	$price = mysql_real_escape_string($_POST["Price"]);
+}
+if (isset($_POST["Quantity"])){
+	$stock = mysql_real_escape_string($_POST["Quantity"]);
+}
+if (isset($_POST["SongTitle"])){
+	$songTitle = mysql_real_escape_string($_POST["SongTitle"]);
+}
+if (isset($_POST["SingerName"])){
+	$singerName = mysql_real_escape_string($_POST["SingerName"]);
+}
+echo "before the switch";
+	switch($i){
+		
+		case 1:
+			echo $title;
+			echo $UPC;
+			$SQL = "UPDATE Item
+					SET title = '$title'
+					WHERE upc = '$UPC'";
+			mysql_query($SQL, $GLOBALS['link']);
+		break;
+		
+		case 2:
+			$SQL = "INSERT into HasSong
+					VALUES ('$UPC', '$songTitle')";
+			$result = mysql_query($SQL);
+		break;
+
+		case 3:
+			$SQL = "DELETE from HasSong
+					WHERE upc = '$UPC'AND SongTitle ='$songTitle'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 4:
+			$SQL = "INSERT into LeadSinger
+					SET name = '$singerName'
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+
+		case 5:
+			$SQL = "DELETE from LeadSinger
+					VALUES ('$UPC', '$singerName')";
+			$result = mysql_query($SQL);
+		break;
+
+		case 6:
+			$SQL = "UPDATE Item
+					SET Type = '$type'
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 7:
+			$init_stock = "SELECT stock
+					FROM Item 
+					WHERE upc = '$UPC'";
+			$result_stock = mysql_query($init_stock);
+
+			$SQL = "UPDATE Item
+					SET stock = '$result_stock' + '$stock'
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 8:
+			$SQL = "UPDATE Item
+					SET price = '$price'
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+
+		case 9:
+			$SQL = "UPDATE Item
+					SET category = '$category'
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+
+		case 10:
+			$SQL = "UPDATE Item
+					SET year = '$year'
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+		
+		case 11:
+			$SQL = "UPDATE Item
+					SET company = '$company'
+					WHERE upc = '$UPC'";
+			$result = mysql_query($SQL);
+		break;
+
+
+		default:
+		echo "did not find case";
+	}
+}
+
+if (!empty($_POST['action']) && $_POST['action'] == "1") {
+	update(1);
+	echo "called update(1)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "2"){
+	update(2);
+	echo "called update(2)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "3") {
+	update(3);
+	echo "called update(3)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "4") {
+	update(4);
+	echo "called update(4)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "5") {
+	update(5);
+	echo "called update(5)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "6") {
+	update(6);
+	echo "called update(6)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "7") {
+	update(7);
+	echo "called update(7)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "8") {
+	update(8);
+	echo "called update(8)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "9") {
+	update(9);
+	echo "called update(9)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "10") {
+	update(10);
+	echo "called update(10)";
+}else if (!empty($_POST['action']) && $_POST['action'] == "11") {
+	update(11);
+	echo "called update(11)";
+}
+
+?>
+
+
+
+<h2>Update Item</h2>
+
+
+<h3>Change Item Title</h3>
+<form method="post" action="update_item.php" class="form-inline" id="1">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Title" name="Title"<?php if(isset($title)){ echo " value=$title";} ?>>
+	<input type="hidden" name="action" value="1">
+<button type="submit" class="btn btn-primary"name="changeTitle">OK</button>
+
+</form>
+
+<h3>Add Song Title</h3>
+<form method="post" action="update_item.php" class="form-inline" id="2">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Song Title" name="SongTitle"<?php if(isset($songTitle)){echo "value= $songTitle";} ?>>
+	<input type="hidden" name="action" value="2">
+<button type="submit" class="btn btn-primary"name="addSong">OK</button>
+</form>
+
+<h3>Delete Song Title</h3>
+<form method="post" action="update_item.php" class="form-inline" id="3">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Song Title" name="SongTitle"<?php if(isset($songTitle)){echo "value= $songTitle";} ?>>
+	<input type="hidden" name="action" value="3">
+<button type="submit" class="btn btn-primary"name="removeSong">OK</button>
+</form>
+
+<h3>Add Lead Singer</h3>
+<form method="post" action="update_item.php" class="form-inline" id="4">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Singer Name" name="SingerName"<?php if(isset($singerName)){echo "value=$singerName";} ?>>
+	<input type="hidden" name="action" value="4">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+
+<h3>Remove Lead Singer</h3>
+<form method="post" action="update_item.php" class="form-inline" id="4">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Singer Name" name="SingerName"<?php if(isset($singerName)){echo "value=$singerName";} ?>>
+	<input type="hidden" name="action" value="5">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+
+<h3>Change Item Type</h3>
+<form method="post" action="update_item.php" class="form-inline" id="5">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Type" name="Type"<?php if(isset($type)){ echo " value=$title";} ?>>
+	<input type="hidden" name="action" value="6">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+
+<h3>Update Stock Quantity</h3>
+<form method="post" action="update_item.php" class="form-inline" id="6">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Quantity" name="Quantity"<?php if(isset($stock)){ echo " value=$stock";} ?>>
+	<input type="hidden" name="action" value="7">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+
+<h3>Change Price</h3>
+<form method="post" action="update_item.php" class="form-inline" id="7">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Price" name="Price"<?php if(isset($price)){ echo " value=$price";} ?>>
+	<input type="hidden" name="action" value="8">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+
+<h3>Change Item Category</h3>
+<form method="post" action="update_item.php" class="form-inline" id="8">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Category" name="Category"<?php if(isset($category)){ echo " value=$category";} ?>>
+	<input type="hidden" name="action" value="9">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+
+<h3>Change Year</h3>
+<form method="post" action="update_item.php" class="form-inline" id="9">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="Year"<?php if(isset($year)){ echo " value=$year";} ?>>
+	<input type="hidden" name="action" value="10">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+
+<h3>Change Item Company</h3>
+<form method="post" action="update_item.php" class="form-inline" id="10">
+	<input type="text" style="width: 300px" class="form-control" placeholder="UPC" name="UPC"<?php if(isset($UPC)){ echo " value=$UPC";} ?>>
+	<input type="text" style="width: 300px" class="form-control" placeholder="Company" name="Company"<?php if(isset($company)){ echo " value=$company";} ?>>
+	<input type="hidden" name="action" value="11">
+<button type="submit" class="btn btn-primary">OK</button>
+</form>
+<?php
+print_page_end();
+?>

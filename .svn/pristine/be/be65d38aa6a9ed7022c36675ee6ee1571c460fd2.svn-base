@@ -1,0 +1,9 @@
+<html>
+<h1>Manager Index</h1>
+<body>
+	<li><a href="add_remove.php">Add/Remove/Update Item</a>
+	<li><a href="sales_report.php">Print Daily Sales Report</a>
+	<li><a href="order.php">Update Order</a>
+	<li><a href="top_sales.php">Print Top Selling Items</a>
+</body>
+</html>
